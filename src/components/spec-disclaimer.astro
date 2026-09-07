@@ -1,0 +1,82 @@
+---
+// Renders on every preset page (CLAUDE.md rule 5). States plainly that the
+// figures are unverified placeholders, shows when the entry was last reviewed,
+// and links to the authority's official page. It is deliberately prominent — a
+// note near the top of the page, never a footer aside — so it is visible without
+// scrolling on mobile. Ships zero JavaScript.
+import type { Preset } from '../data/presets';
+
+interface Props {
+  preset: Preset;
+}
+
+const { preset } = Astro.props;
+
+// Format the review date for readers; fall back to the raw ISO string if it is
+// not a parseable date.
+const parsed = new Date(preset.lastCheckedOn);
+const reviewedOn = Number.isNaN(parsed.getTime())
+  ? preset.lastCheckedOn
+  : parsed.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<aside class="spec-disclaimer" role="note" aria-labelledby="spec-disclaimer-title">
+  <p class="spec-disclaimer__title" id="spec-disclaimer-title">
+    {preset.verified ? 'Double-check before you rely on this' : 'Unverified — check the official notification'}
+  </p>
+  <p>
+    These file-size{preset.photo.widthPx ? ' and dimension' : ''} figures for
+    <strong>{preset.examName}</strong> are placeholders drawn from secondary sources. They have
+    <strong>not</strong> been confirmed against {preset.authority}'s official requirements, so treat
+    them as a starting point, not the final word.
+  </p>
+  <p class="spec-disclaimer__meta">
+    Last reviewed on {reviewedOn}.{' '}
+    <a href={preset.officialUrl} target="_blank" rel="nofollow noopener noreferrer">
+      Open the official {preset.authority} page →
+    </a>
+  </p>
+</aside>
+
+<style>
+  /* High-contrast warning styling. Colours chosen for >= 4.5:1 body-text
+     contrast against the amber ground. */
+  .spec-disclaimer {
+    margin: 0 0 1.5rem;
+    padding: 1rem 1.125rem;
+    border: 1px solid #d97706; /* amber-600 */
+    border-left-width: 5px;
+    border-radius: 0.5rem;
+    background: #fffbeb; /* amber-50 */
+    color: #713f12; /* amber-900 */
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .spec-disclaimer > p {
+    margin: 0;
+  }
+
+  .spec-disclaimer > p + p {
+    margin-top: 0.5rem;
+  }
+
+  .spec-disclaimer__title {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .spec-disclaimer__meta {
+    font-size: 0.9rem;
+  }
+
+  .spec-disclaimer a {
+    color: #92400e; /* amber-800 */
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .spec-disclaimer a:hover {
+    text-decoration: none;
+  }
+</style>

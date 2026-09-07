@@ -1,0 +1,42 @@
+---
+// Dev-only harness that mounts fixed-spec ResizeTool islands (photo + signature)
+// so the fixed-spec engine path stays under test even though the public exam pages
+// are currently unpublished. Not linked, excluded from the sitemap (astro.config
+// filters /dev/), marked noindex, and never audited against the budgets. It reuses
+// the preserved preset data so the specs are realistic.
+import BaseLayout from '../../layouts/base-layout.astro';
+import ResizeTool from '../../components/tool/ResizeTool.tsx';
+import AdSlot from '../../components/ad-slot.astro';
+import { getPreset, type SizeSpec } from '../../data/presets';
+
+// SSC-CGL: photo 20–50KB at 276×354, signature 10–20KB. Fall back to inline specs
+// if the preset is ever removed, so the harness never breaks the build.
+const preset = getPreset('ssc-cgl');
+const photoSpec: SizeSpec =
+  preset?.photo ?? { minBytes: 20 * 1024, maxBytes: 50 * 1024, widthPx: 276, heightPx: 354, format: 'jpeg' };
+const signatureSpec: SizeSpec =
+  preset?.signature ?? { minBytes: 10 * 1024, maxBytes: 20 * 1024, format: 'jpeg' };
+---
+
+<BaseLayout title="Tool harness" description="Dev-only harness for the resize tool." bare>
+  <meta name="robots" content="noindex" slot="jsonld" />
+  <main
+    id="main-content"
+    style="max-width:40rem;margin:2rem auto;padding:0 1rem;display:flex;flex-direction:column;gap:2rem;"
+  >
+    <h1>Tool harness</h1>
+
+    <section>
+      <h2>Photo</h2>
+      <ResizeTool client:load spec={photoSpec} label="Photo" />
+    </section>
+
+    <section>
+      <h2>Signature</h2>
+      <ResizeTool client:load spec={signatureSpec} label="Signature" />
+    </section>
+
+    <div style="height:90px;"></div>
+    <AdSlot width={336} height={280} clearanceFromPrimaryActionPx={240} />
+  </main>
+</BaseLayout>

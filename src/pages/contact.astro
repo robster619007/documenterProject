@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/base-layout.astro';
+
+// The contact address is a placeholder until the production domain is set, matching
+// the placeholder `site` in astro.config.mjs. Update both together before launch.
+const email = 'hello@documenter.example';
+---
+
+<BaseLayout
+  title="Contact — Documenter"
+  description="How to get in touch with Documenter about a bug, a wrong exam preset, or a feature request."
+>
+  <main id="main-content" class="container section">
+    <div class="prose">
+      <h1>Contact</h1>
+      <p>
+        Documenter is a small project. There is no account system and no support desk, but we do read
+        messages and fix things.
+      </p>
+
+      <h2>Get in touch</h2>
+      <p>
+        Email <a href={`mailto:${email}`}>{email}</a>. This address is a placeholder while the site is
+        in development and will be updated before launch.
+      </p>
+
+      <h2>Reporting a wrong exam preset</h2>
+      <p>
+        If a preset's numbers don't match the official notification, please tell us which exam and
+        include a link to the official source. Every preset is marked unverified until a human
+        confirms it, and accurate corrections are welcome. We will not change a specification without
+        a source.
+      </p>
+
+      <h2>A note on your files</h2>
+      <p>
+        Please never email us your documents — we don't need them, and Documenter never sees the
+        files you process. If you are reporting a conversion problem, describe the file (type, size,
+        what happened) instead of sending it.
+      </p>
+    </div>
+  </main>
+</BaseLayout>

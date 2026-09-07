@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/base-layout.astro';
+---
+
+<BaseLayout
+  title="About — Documenter"
+  description="Why Documenter exists: a privacy-first way to fit photos, signatures and PDFs to the strict file-size rules of Indian exam and government forms."
+>
+  <main id="main-content" class="container section">
+    <div class="prose">
+      <h1>About Documenter</h1>
+      <p>
+        Documenter started with a small, maddening problem. You fill in an online application for an
+        exam or a government service, reach the upload step, and the portal refuses your photo
+        because it is 62KB instead of "20KB to 50KB", or because it is 400 pixels wide instead of the
+        exact size demanded. So you hunt for a converter, upload your photo to some website you have
+        never heard of, and hope for the best.
+      </p>
+      <p>
+        That last part bothered us. Handing your photograph, signature or identity documents to an
+        anonymous server just to shrink a file is a poor trade. Modern browsers are perfectly capable
+        of resizing and compressing files on their own — so that is exactly what Documenter does.
+      </p>
+
+      <h2>What it is</h2>
+      <p>
+        Documenter is a small toolkit for fitting documents to a required size and shape:
+      </p>
+      <ul>
+        <li>Resize a photo or signature to an exact KB limit and pixel dimensions.</li>
+        <li>Compress a PDF under a size cap — keeping text selectable, or flattening scans.</li>
+        <li>Combine images into a single PDF.</li>
+      </ul>
+      <p>
+        Everything runs in your browser. Nothing is uploaded. You can read more on the
+        <a href="/privacy">privacy page</a>.
+      </p>
+
+      <h2>Where it's going</h2>
+      <p>
+        This is an early version. More formats and more tools will follow, and every change will keep
+        the core rule intact: your files stay on your device.
+      </p>
+    </div>
+  </main>
+</BaseLayout>

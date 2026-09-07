@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../../layouts/base-layout.astro';
+import ImageToPdfTool from '../../components/tool/ImageToPdfTool.tsx';
+import AdSlot from '../../components/ad-slot.astro';
+import { howTo } from '../../lib/seo/schema';
+
+const jsonLd = howTo(
+  'Convert images to a single PDF',
+  'Combine one or more images into a single PDF in your browser, optionally under a size limit.',
+  [
+    { name: 'Add your images', text: 'Drag or click to add images in the order you want the pages.' },
+    { name: 'Set a size limit', text: 'Optionally cap the final PDF size for portals with an upload limit.' },
+    { name: 'Make the PDF', text: 'Documenter builds one page per image, entirely on your device.' },
+    { name: 'Download', text: 'Save your PDF.' },
+  ],
+);
+---
+
+<BaseLayout
+  title="Convert images to PDF"
+  description="Combine one or more images into a single PDF in your browser, optionally under a size limit. Nothing is uploaded."
+>
+  <script type="application/ld+json" slot="jsonld" set:html={JSON.stringify(jsonLd)} />
+
+  <main id="main-content" class="container section">
+    <div class="prose">
+      <h1>Images to PDF</h1>
+      <p>
+        Turn photos or scans into a single PDF — one image per page, in the order you add them. Cap
+        the size if the upload demands it. Everything runs on your own device, with no upload.
+      </p>
+    </div>
+
+    <div style="margin-top:1.5rem;max-width:34rem;">
+      <ImageToPdfTool client:visible />
+    </div>
+
+    <div class="prose" style="margin-top:2.5rem;">
+      <h2>Tips</h2>
+      <ul>
+        <li>Add images in reading order — the PDF keeps the order you see in the list.</li>
+        <li>
+          For a document you scanned as several photos, a size limit keeps the combined PDF small
+          enough to upload.
+        </li>
+        <li>
+          Very large phone photos are scaled down to a sensible page size automatically, so the PDF
+          doesn't become enormous.
+        </li>
+      </ul>
+
+      <h2>Keeping text selectable</h2>
+      <p>
+        Images have no text layer, so a PDF built from images is not searchable. If you started from
+        a text PDF and only need it smaller, use <a href="/tools/compress-pdf">Compress PDF</a>
+        instead, which can keep the text selectable.
+      </p>
+    </div>
+
+    <div class="section" style="margin-top:1rem;">
+      <AdSlot width={728} height={90} clearanceFromPrimaryActionPx={400} />
+    </div>
+  </main>
+</BaseLayout>

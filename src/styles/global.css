@@ -1,0 +1,294 @@
+@import 'tailwindcss';
+
+/* Documenter design system. Content pages ship zero JS, so all of the look lives
+   here in CSS. Mobile-first; colours meet WCAG AA (>= 4.5:1) for body text. */
+
+:root {
+  --ink: #0f172a; /* slate-900 */
+  --ink-soft: #334155; /* slate-700 */
+  --muted: #475569; /* slate-600 */
+  --line: #e2e8f0; /* slate-200 */
+  --panel: #f8fafc; /* slate-50 */
+  --bg: #ffffff;
+  --brand: #1d4ed8; /* blue-700 */
+  --brand-dark: #1e40af; /* blue-800 */
+  --accent: #166534; /* green-800 (success/download) */
+  --maxw: 68rem;
+  --prose: 42rem;
+  --radius: 0.75rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+h1 {
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--brand);
+  /* Underline inline links so they're distinguishable without relying on colour
+     (WCAG). Tailwind's preflight removes the default underline; nav, cards and
+     buttons opt back out with text-decoration:none. */
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+a:hover {
+  color: var(--brand-dark);
+}
+
+:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Skip link for keyboard users. */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 0 0 0.4rem 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* Layout container */
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding-inline: 1.25rem;
+}
+
+/* Site header */
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4rem;
+  flex-wrap: wrap;
+}
+.site-header__brand {
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.site-header__brand span {
+  color: var(--brand);
+}
+.site-nav {
+  display: flex;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+}
+.site-nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-weight: 500;
+}
+.site-nav a:hover {
+  color: var(--brand);
+}
+
+/* Site footer */
+.site-footer {
+  margin-top: 3.5rem;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  justify-content: space-between;
+  padding-block: 1.5rem;
+}
+.site-footer nav {
+  display: flex;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+}
+.site-footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.site-footer a:hover {
+  color: var(--brand);
+}
+
+/* Generic content section spacing */
+main {
+  display: block;
+}
+.section {
+  padding-block: 2.5rem;
+}
+.prose {
+  max-width: var(--prose);
+}
+.prose p,
+.prose li {
+  color: var(--ink-soft);
+}
+.prose h2 {
+  margin-top: 2rem;
+}
+.prose h3 {
+  margin-top: 1.5rem;
+  font-size: 1.15rem;
+}
+
+/* Hero */
+.hero {
+  padding-block: 3rem 2rem;
+}
+.hero p.lead {
+  max-width: 40rem;
+  font-size: 1.2rem;
+  color: var(--ink-soft);
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #065f46;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Card grid (tools, presets) */
+.card-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+a.card:hover {
+  border-color: var(--brand);
+  transform: translateY(-2px);
+}
+.card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* CTA button */
+.btn {
+  display: inline-block;
+  padding: 0.7rem 1.4rem;
+  border-radius: 0.5rem;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+.btn:hover {
+  background: var(--brand-dark);
+  color: #fff;
+}
+
+/* Requirements table (exam pages). The table scrolls inside its own container on
+   narrow screens so the page body never scrolls sideways. */
+.table-scroll {
+  overflow-x: auto;
+}
+.req-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.req-table th,
+.req-table td {
+  white-space: nowrap;
+}
+.req-table caption {
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+.req-table th,
+.req-table td {
+  border: 1px solid var(--line);
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+}
+.req-table th {
+  background: var(--panel);
+}
+
+/* Two tools side by side on wide screens */
+.tool-pair {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  align-items: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a.card:hover {
+    transform: none;
+  }
+}

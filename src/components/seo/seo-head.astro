@@ -1,0 +1,29 @@
+---
+// Renders the shared <head> metadata for every page: title, description,
+// canonical, Open Graph tags, and a named slot for page-specific JSON-LD.
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  ogImage?: string;
+}
+
+const { title, description, canonical, ogImage } = Astro.props;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+{ogImage && <meta property="og:image" content={ogImage} />}
+
+<meta name="generator" content={Astro.generator} />
+
+<!-- Page-specific structured data (WebSite / HowTo / FAQPage) injected here. -->
+<slot name="jsonld" />

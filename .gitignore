@@ -1,0 +1,26 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# test & tooling artifacts
+playwright-report/
+test-results/
+.lighthouseci/
+lighthouse-logs/
+
+# env & logs
+.env
+.env.*
+*.log
+npm-debug.log*
+
+# os
+.DS_Store
+
+# internal planning & agent-instruction docs — kept local, never published
+CLAUDE.md
+docs/PROJECT_BRIEF.md
+docs/PROTOTYPE_SPEC.md

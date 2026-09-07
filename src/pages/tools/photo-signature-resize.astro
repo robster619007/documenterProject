@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../../layouts/base-layout.astro';
+import ResizeTool from '../../components/tool/ResizeTool.tsx';
+import AdSlot from '../../components/ad-slot.astro';
+import { howTo } from '../../lib/seo/schema';
+
+const jsonLd = howTo(
+  'Resize a photo or signature to a required file size',
+  'Shrink an image to an exact KB limit and pixel size, entirely in your browser.',
+  [
+    { name: 'Set your target', text: 'Enter the maximum file size and, if needed, the exact width and height the form requires.' },
+    { name: 'Add your image', text: 'Drag, click or paste your photo or signature. It is processed on your device.' },
+    { name: 'Resize', text: 'Documenter finds the highest quality that still fits your size limit.' },
+    { name: 'Download', text: 'Save the resized image, with the before and after sizes shown.' },
+  ],
+);
+---
+
+<BaseLayout
+  title="Resize a photo or signature to a size limit"
+  description="Resize a photo or signature to an exact KB limit and pixel size for an online form — entirely in your browser. Nothing is uploaded."
+>
+  <script type="application/ld+json" slot="jsonld" set:html={JSON.stringify(jsonLd)} />
+
+  <main id="main-content" class="container section">
+    <div class="prose">
+      <h1>Resize a photo or signature</h1>
+      <p>
+        Set the size limit and dimensions a form asks for, then drop in your image. Documenter keeps
+        the best quality that still fits — all on your own device, with no upload.
+      </p>
+    </div>
+
+    <div style="margin-top:1.5rem;max-width:34rem;">
+      <ResizeTool client:visible label="Image" />
+    </div>
+
+    <div class="prose" style="margin-top:2.5rem;">
+      <h2>Tips for a clean result</h2>
+      <ul>
+        <li>
+          For a passport-style photo, use the exact width and height the portal specifies. JPG is
+          almost always the right format and gives the smallest file.
+        </li>
+        <li>
+          If your image looks blurry after shrinking, the size limit may be very tight for the
+          dimensions — try slightly larger dimensions, or accept the closest fit shown.
+        </li>
+        <li>
+          A signature scanned or photographed on white paper compresses to a very small file. PNG
+          keeps crisp edges but is larger; JPG is smaller and usually fine.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Ad sits well below the tool controls; the prose above guarantees clearance. -->
+    <div class="section" style="margin-top:1rem;">
+      <AdSlot width={728} height={90} clearanceFromPrimaryActionPx={400} />
+    </div>
+  </main>
+</BaseLayout>

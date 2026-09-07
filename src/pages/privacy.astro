@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../layouts/base-layout.astro';
+---
+
+<BaseLayout
+  title="Privacy — Documenter"
+  description="Documenter processes every file in your browser. There is no upload and no server that sees your documents. Here is exactly how that works."
+>
+  <main id="main-content" class="container section">
+    <div class="prose">
+      <h1>Privacy</h1>
+      <p>
+        Documenter is built around one promise: <strong>your files never leave your device.</strong>
+        This page explains, plainly, what that means and how you can verify it.
+      </p>
+
+      <h2>Everything happens in your browser</h2>
+      <p>
+        When you choose a photo, signature or PDF, the file is read and processed by code running
+        inside your own browser tab — using the same technologies a web page uses to show an image.
+        The resizing, compression and PDF building all run on your device's processor. The result is
+        offered back to you as a download.
+      </p>
+      <p>
+        There is <strong>no upload step</strong>. Your document is never sent to Documenter or to any
+        other server, because there is no server involved in processing it.
+      </p>
+
+      <h2>You can check this yourself</h2>
+      <p>
+        Open your browser's developer tools and look at the Network tab while you convert a file. You
+        will see that no request carries your file's contents anywhere. This is the difference
+        between Documenter and most online converters, which upload your file to a server you cannot
+        see.
+      </p>
+
+      <h2>What we do and don't collect</h2>
+      <ul>
+        <li>We do not receive, store, or have any access to the documents you process.</li>
+        <li>We do not require an account, and we do not ask for your name or email to use the tools.</li>
+        <li>
+          The site is static. If analytics or advertising are added later, they will be described
+          here before they go live, and they will never have access to your files.
+        </li>
+      </ul>
+
+      <h2>Files you download</h2>
+      <p>
+        Converted files are created in your browser and saved by you to your own device. Documenter
+        keeps no copy because it never had one.
+      </p>
+
+      <p>
+        Questions about privacy? See the <a href="/contact">contact page</a>.
+      </p>
+    </div>
+  </main>
+</BaseLayout>

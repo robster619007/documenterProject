@@ -1,0 +1,44 @@
+---
+import SeoHead from '../components/seo/seo-head.astro';
+import SiteHeader from '../components/site-header.astro';
+import SiteFooter from '../components/site-footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath?: string;
+  // Dev/utility pages can hide the site chrome (header/footer).
+  bare?: boolean;
+}
+
+// canonicalPath defaults to the current route; resolved against `site` so the
+// canonical URL is absolute even in static output.
+const { title, description, canonicalPath = Astro.url.pathname, bare = false } = Astro.props;
+const canonical = new URL(canonicalPath, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <SeoHead title={title} description={description} canonical={canonical}>
+      <slot name="jsonld" slot="jsonld" />
+    </SeoHead>
+  </head>
+  <body>
+    {
+      bare ? (
+        <slot />
+      ) : (
+        <>
+          <a class="skip-link" href="#main-content">
+            Skip to content
+          </a>
+          <SiteHeader />
+          <slot />
+          <SiteFooter />
+        </>
+      )
+    }
+  </body>
+</html>

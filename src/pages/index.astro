@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../layouts/base-layout.astro';
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Documenter',
+  url: Astro.site?.toString(),
+  description:
+    'Resize photos and signatures to exam requirements and compress PDFs — entirely in your browser.',
+};
+
+const tools = [
+  {
+    href: '/tools/photo-signature-resize',
+    title: 'Resize photo & signature',
+    body: 'Shrink a photo or signature to an exact KB limit and pixel size for an online form.',
+  },
+  {
+    href: '/tools/compress-pdf',
+    title: 'Compress PDF',
+    body: 'Bring a PDF under a size limit — keep the text selectable, or flatten scans for the smallest file.',
+  },
+  {
+    href: '/tools/image-to-pdf',
+    title: 'Images to PDF',
+    body: 'Combine one or more images into a single PDF, optionally under a size cap.',
+  },
+];
+---
+
+<BaseLayout
+  title="Documenter — resize and compress documents in your browser"
+  description="Resize photos and signatures to exam requirements and compress PDFs — entirely in your browser. Your files never leave your device."
+>
+  <script
+    type="application/ld+json"
+    slot="jsonld"
+    set:html={JSON.stringify(websiteJsonLd)}
+  />
+
+  <main id="main-content">
+    <section class="container hero">
+      <span class="pill">🔒 Files never leave your device</span>
+      <h1>Fit any document to the size a form demands</h1>
+      <p class="lead">
+        Indian exam and government portals reject uploads that are a kilobyte too big or a pixel too
+        wide. Documenter resizes and compresses your photo, signature and PDFs to the exact
+        requirement — right here in your browser. Nothing is uploaded to a server.
+      </p>
+      <p style="margin-top:1.25rem;">
+        <a class="btn" href="/tools/photo-signature-resize">Resize a photo now</a>
+      </p>
+    </section>
+
+    <section class="container section" aria-labelledby="tools-heading">
+      <h2 id="tools-heading">The tools</h2>
+      <div class="card-grid" style="margin-top:1rem;">
+        {
+          tools.map((t) => (
+            <a class="card" href={t.href}>
+              <h3>{t.title}</h3>
+              <p>{t.body}</p>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="container section" aria-labelledby="how-heading">
+      <h2 id="how-heading">How it works</h2>
+      <div class="card-grid" style="margin-top:1rem;">
+        <div class="card">
+          <h3>1. Choose your target</h3>
+          <p>Pick an exam preset or type the size limit and dimensions the form asks for.</p>
+        </div>
+        <div class="card">
+          <h3>2. Drop your file</h3>
+          <p>Drag, click or paste. Everything is processed on your own device.</p>
+        </div>
+        <div class="card">
+          <h3>3. Download the result</h3>
+          <p>Get a file that fits — with the before and after sizes shown so you can be sure.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="container section" aria-labelledby="privacy-heading">
+      <h2 id="privacy-heading">Your files stay yours</h2>
+      <p class="prose">
+        Documenter runs entirely in your browser. There is no upload step and no server that sees
+        your documents — you can confirm it yourself in your browser's Network tab.
+        <a href="/privacy">Read how it works</a>.
+      </p>
+    </section>
+  </main>
+</BaseLayout>

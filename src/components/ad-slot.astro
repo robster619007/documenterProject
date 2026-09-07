@@ -1,0 +1,75 @@
+---
+// A structural ad placeholder (CLAUDE.md rule 4). It reserves an explicit height
+// that never collapses to zero, and renders NO live ad script in the prototype —
+// just a labelled box of the right dimensions.
+//
+// Safety rule enforced in code, not merely documented: an ad must never sit within
+// 150px of a primary action (upload / convert / download). Accidental clicks on an
+// ad next to a download button get AdSense accounts banned. A static component
+// cannot measure rendered pixel distances, so the caller must assert the vertical
+// clearance the layout guarantees between this slot and the nearest
+// [data-primary-action]. If that asserted clearance is below the floor, the build
+// throws right here — the page cannot be built with an unsafe placement.
+import type { HTMLAttributes } from 'astro/types';
+
+export const MIN_CLEARANCE_PX = 150;
+
+interface Props extends HTMLAttributes<'div'> {
+  width: number;
+  height: number;
+  // Vertical gap, in px, the layout guarantees between this slot and the nearest
+  // primary action. Must be >= MIN_CLEARANCE_PX or the build fails.
+  clearanceFromPrimaryActionPx: number;
+  label?: string;
+}
+
+const {
+  width,
+  height,
+  clearanceFromPrimaryActionPx,
+  label = 'Advertisement',
+  ...rest
+} = Astro.props;
+
+if (
+  !Number.isFinite(clearanceFromPrimaryActionPx) ||
+  clearanceFromPrimaryActionPx < MIN_CLEARANCE_PX
+) {
+  throw new Error(
+    `AdSlot: refused to build — declared clearance of ${clearanceFromPrimaryActionPx}px from a ` +
+      `primary action is below the ${MIN_CLEARANCE_PX}px minimum. Move this ad further from any ` +
+      `upload / convert / download control (CLAUDE.md rule 4), then set ` +
+      `clearanceFromPrimaryActionPx to the real gap.`,
+  );
+}
+---
+
+<div
+  class="ad-slot"
+  style={`height:${height}px;min-height:${height}px;max-width:${width}px;`}
+  role="complementary"
+  aria-label={label}
+  data-ad-slot
+  {...rest}
+>
+  <span class="ad-slot__tag">{label}</span>
+</div>
+
+<style>
+  /* The reserved height is set inline and must never collapse — an unfilled slot
+     keeps its box so nothing below it shifts (protects CLS). */
+  .ad-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin: 0 auto;
+    border: 1px dashed #cbd5e1;
+    border-radius: 0.5rem;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+</style>

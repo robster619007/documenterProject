@@ -1,0 +1,20 @@
+---
+// Site-wide footer. Static, zero JS. Repeats the core privacy promise.
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <p style="margin:0;max-width:24rem;">
+      <strong>Documenter</strong> — resize and compress documents entirely in your browser. Your
+      files never leave your device.
+    </p>
+    <nav aria-label="Footer">
+      <a href="/privacy">Privacy</a>
+      <a href="/terms">Terms</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+    </nav>
+    <p style="margin:0;width:100%;">© {year} Documenter</p>
+  </div>
+</footer>

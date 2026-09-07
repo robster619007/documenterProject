@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://documenter.pages.dev/sitemap-index.xml

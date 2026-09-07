@@ -1,0 +1,116 @@
+---
+// Dev-only harness for driving the conversion engine from Playwright. Not linked
+// from anywhere, excluded from the sitemap (see astro.config.mjs), and marked
+// noindex. It is the only page allowed to ship JS outside of a real tool island.
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Engine harness</title>
+  </head>
+  <body>
+    <h1>Engine harness</h1>
+    <p>Test-only page for the conversion engine.</p>
+
+    <script>
+      import { createImageWorker, runImageJob } from '../../lib/worker/run-image-job';
+      import { createPdfWorker, runPdfJob } from '../../lib/worker/run-pdf-job';
+      import type { ImageJob } from '../../lib/worker/image-worker';
+      import type { PdfJob } from '../../lib/worker/pdf-worker';
+      import { PDFDocument, StandardFonts } from 'pdf-lib';
+      import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+      import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+      import UTIF from 'utif2';
+
+      GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
+
+      const imageWorker = createImageWorker();
+      const pdfWorker = createPdfWorker();
+      const globals = window as unknown as Record<string, unknown>;
+
+      // Exposed for Playwright: run one image job and return a plain summary.
+      globals.__runImageJob = async (
+        input: ArrayBuffer,
+        opts: Omit<ImageJob, 'jobId' | 'input'>,
+      ) => {
+        const job: ImageJob = { jobId: crypto.randomUUID(), input, ...opts };
+        const res = await runImageJob(imageWorker, job);
+        return {
+          beforeBytes: res.beforeBytes,
+          afterBytes: res.afterBytes,
+          iterations: res.iterations,
+          width: res.width,
+          height: res.height,
+          outputFormat: res.outputFormat,
+        };
+      };
+
+      // Exposed for Playwright: run one PDF job. Returns the sizes plus the output
+      // bytes so a test can inspect the result (e.g. count selectable text).
+      globals.__runPdfJob = async (input: ArrayBuffer, opts: Omit<PdfJob, 'jobId' | 'input'>) => {
+        const job: PdfJob = { jobId: crypto.randomUUID(), input, ...opts };
+        const res = await runPdfJob(pdfWorker, job);
+        return { beforeBytes: res.beforeBytes, afterBytes: res.afterBytes, output: res.output };
+      };
+
+      // Builds a single-page image PDF from JPEG bytes (a large scan-like PDF).
+      globals.__makeImagePdf = async (jpegBytes: ArrayBuffer) => {
+        const doc = await PDFDocument.create();
+        const img = await doc.embedJpg(new Uint8Array(jpegBytes));
+        const page = doc.addPage([img.width, img.height]);
+        page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+        const bytes = await doc.save();
+        return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+      };
+
+      // Builds a multi-page text PDF (real selectable text).
+      globals.__makeTextPdf = async () => {
+        const doc = await PDFDocument.create();
+        const font = await doc.embedFont(StandardFonts.Helvetica);
+        for (let p = 0; p < 3; p++) {
+          const page = doc.addPage([595, 842]);
+          for (let line = 0; line < 40; line++) {
+            page.drawText(`Application form line ${p * 40 + line}: the quick brown fox.`, {
+              x: 50,
+              y: 800 - line * 18,
+              size: 11,
+              font,
+            });
+          }
+        }
+        const bytes = await doc.save();
+        return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+      };
+
+      // Counts selectable-text characters in a PDF (0 == fully rasterized).
+      globals.__pdfTextLength = async (pdfBytes: ArrayBuffer) => {
+        const task = getDocument({ data: pdfBytes.slice(0) });
+        const pdf = await task.promise;
+        let chars = 0;
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const content = await (await pdf.getPage(i)).getTextContent();
+          for (const item of content.items) if ('str' in item) chars += item.str.trim().length;
+        }
+        await task.destroy();
+        return chars;
+      };
+
+      // Builds a small TIFF (utif2) to exercise the lazy TIFF decoder path.
+      globals.__makeTiff = (w = 64, h = 64) => {
+        const rgba = new Uint8Array(w * h * 4);
+        for (let i = 0; i < rgba.length; i += 4) {
+          rgba[i] = i % 255;
+          rgba[i + 1] = 128;
+          rgba[i + 2] = 200;
+          rgba[i + 3] = 255;
+        }
+        return UTIF.encodeImage(rgba, w, h);
+      };
+
+      globals.__engineReady = true;
+    </script>
+  </body>
+</html>

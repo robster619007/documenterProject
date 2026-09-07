@@ -1,0 +1,189 @@
+---
+import BaseLayout from '../../layouts/base-layout.astro';
+import ResizeTool from '../../components/tool/ResizeTool.tsx';
+import SpecDisclaimer from '../../components/spec-disclaimer.astro';
+import AdSlot from '../../components/ad-slot.astro';
+import { presets, type Preset, type SizeSpec } from '../../data/presets';
+import { howTo, faqPage } from '../../lib/seo/schema';
+
+// Exam preset pages are intentionally UNPUBLISHED for now. The user asked to hide
+// the exam-presets feature from the public site while keeping all of its code for
+// a possible later release (e.g. behind a subscription). Flip PRESETS_PUBLISHED to
+// true (and restore the home-page section + header link) to bring the pages back —
+// nothing else here needs to change. The flag lives INSIDE getStaticPaths because
+// Astro runs that function in an isolated scope that cannot see frontmatter consts.
+export function getStaticPaths() {
+  const PRESETS_PUBLISHED = false;
+  return PRESETS_PUBLISHED
+    ? presets.map((preset) => ({ params: { slug: preset.slug }, props: { preset } }))
+    : [];
+}
+
+interface Props {
+  preset: Preset;
+}
+const { preset } = Astro.props;
+
+function kb(bytes: number): string {
+  const v = bytes / 1024;
+  return v < 1024 ? `${Math.round(v)} KB` : `${(v / 1024).toFixed(1)} MB`;
+}
+function sizeText(s: SizeSpec): string {
+  return s.minBytes != null ? `${kb(s.minBytes)} – ${kb(s.maxBytes)}` : `Up to ${kb(s.maxBytes)}`;
+}
+function dimsText(s: SizeSpec): string {
+  return s.widthPx && s.heightPx ? `${s.widthPx} × ${s.heightPx} px` : '—';
+}
+
+const rows: { label: string; spec: SizeSpec }[] = [
+  { label: 'Photo', spec: preset.photo },
+  { label: 'Signature', spec: preset.signature },
+  ...(preset.document ? [{ label: 'Document', spec: preset.document }] : []),
+];
+
+const faqs = [
+  {
+    q: `Why does ${preset.examName} restrict the photo and signature file size?`,
+    a: 'Upload portals store millions of files and cap each one so pages load quickly and storage stays manageable. A photo that is a few kilobytes over the limit is rejected outright, which is why an exact-size tool is useful.',
+  },
+  {
+    q: 'Will Documenter upload my photo anywhere?',
+    a: 'No. Every resize happens inside your own browser. Your photo, signature and documents never leave your device — you can confirm this in your browser\'s Network tab.',
+  },
+  {
+    q: 'The tool can\'t reach the required size. What now?',
+    a: 'If the size limit is very tight for the required dimensions, try the closest fit the tool produces, or adjust the dimensions slightly. For a signature, photographing it on plain white paper produces a much smaller file.',
+  },
+  {
+    q: 'Are these numbers official?',
+    a: 'No. The requirements shown here are unverified placeholders from secondary sources. Always confirm them against the official notification before you submit your application.',
+  },
+];
+
+const howToJsonLd = howTo(
+  `Resize your ${preset.examName} photo and signature`,
+  `Fit your photo and signature to the ${preset.examName} upload requirements in your browser.`,
+  [
+    { name: 'Check the requirements', text: 'Read the size and dimensions in the table, and confirm them against the official notification.' },
+    { name: 'Resize your photo', text: 'Drop your photo into the photo tool; it is resized to the required size on your device.' },
+    { name: 'Resize your signature', text: 'Do the same with your signature in the signature tool.' },
+    { name: 'Download and upload', text: 'Download both files and upload them to the official portal.' },
+  ],
+);
+const faqJsonLd = faqPage(faqs);
+---
+
+<BaseLayout
+  title={`${preset.examName} photo & signature size`}
+  description={`Resize your ${preset.examName} photo and signature to the required file size and dimensions — in your browser, nothing uploaded. Specs are unverified; confirm with ${preset.authority}.`}
+>
+  <script type="application/ld+json" slot="jsonld" set:html={JSON.stringify(howToJsonLd)} />
+  <script type="application/ld+json" slot="jsonld" set:html={JSON.stringify(faqJsonLd)} />
+
+  <main id="main-content" class="container section">
+    <h1>{preset.examName}: photo &amp; signature size</h1>
+
+    <div style="margin-top:1rem;max-width:42rem;">
+      <SpecDisclaimer preset={preset} />
+    </div>
+
+    <div class="table-scroll" style="margin-top:1rem;max-width:42rem;">
+      <table class="req-table">
+      <caption>Requirements for {preset.examName} ({preset.authority})</caption>
+      <thead>
+        <tr>
+          <th scope="col">Item</th>
+          <th scope="col">File size</th>
+          <th scope="col">Dimensions</th>
+          <th scope="col">Format</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((r) => (
+            <tr>
+              <th scope="row">{r.label}</th>
+              <td>{sizeText(r.spec)}</td>
+              <td>{dimsText(r.spec)}</td>
+              <td>{r.spec.format.toUpperCase()}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+      </table>
+    </div>
+
+    <div class="tool-pair" style="margin-top:2rem;">
+      <div>
+        <h2>Photo</h2>
+        <ResizeTool client:visible spec={preset.photo} label="Photo" />
+      </div>
+      <div>
+        <h2>Signature</h2>
+        <ResizeTool client:visible spec={preset.signature} label="Signature" />
+      </div>
+    </div>
+
+    <div class="prose section">
+      <h2>How to get your photo and signature accepted</h2>
+      <p>
+        Online application portals are strict about the photograph and signature you upload, and a
+        file that is even slightly too large or the wrong shape is refused before your form is
+        submitted. The limits exist for practical reasons: a portal that accepts lakhs of
+        applications has to keep every image small so pages load quickly and storage stays under
+        control. Understanding what the portal is checking makes it far easier to pass on the first
+        try.
+      </p>
+
+      <h3>Taking a usable photo on a phone</h3>
+      <p>
+        You do not need a studio. Stand facing a window so daylight falls evenly on your face, and
+        put a plain, light-coloured wall behind you. Hold the phone at eye level rather than below,
+        which avoids the unflattering upward angle, and keep your whole head and the top of your
+        shoulders in the frame. Avoid heavy shadows, hats, and coloured backgrounds, all of which are
+        common reasons a photo is rejected. Take the picture at your phone's normal resolution — it
+        will be far larger than the limit, and that is fine, because the tool above shrinks it down
+        while keeping it sharp. Resizing a large, clear photo always looks better than trying to
+        enlarge a small one.
+      </p>
+
+      <h3>Photographing a signature</h3>
+      <p>
+        Sign in black or dark blue ink on a clean sheet of white paper, then photograph or scan it in
+        good light. Fill the frame with the signature so there is little empty space around it, and
+        make sure the paper looks white rather than grey in the photo. A signature on white paper
+        compresses to a very small file, so meeting a tight signature size limit is usually easy. If
+        your signature file comes out larger than expected, the paper was probably dim or off-white —
+        retake it in brighter light.
+      </p>
+
+      <h3>What causes a rejection</h3>
+      <p>
+        The most frequent causes are a file that exceeds the size limit, dimensions that do not match
+        what the portal expects, and the wrong file format — usually a PNG where a JPG is required.
+        The tools on this page handle all three: they output the correct format, resize to the exact
+        pixel dimensions when specified, and keep the file under the size cap. Beyond the technical
+        checks, a blurry, dark, or heavily filtered photo can also be refused on review, so start
+        from a clean, well-lit original.
+      </p>
+
+      <h3>Frequently asked questions</h3>
+      {
+        faqs.map((f) => (
+          <details>
+            <summary><strong>{f.q}</strong></summary>
+            <p>{f.a}</p>
+          </details>
+        ))
+      }
+
+      <p style="margin-top:1.5rem;">
+        <a href={preset.officialUrl} target="_blank" rel="nofollow noopener noreferrer">
+          Official {preset.authority} website →
+        </a>
+      </p>
+    </div>
+
+    <AdSlot width={728} height={90} clearanceFromPrimaryActionPx={400} />
+  </main>
+</BaseLayout>

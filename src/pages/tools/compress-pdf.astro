@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../../layouts/base-layout.astro';
+import PdfCompressTool from '../../components/tool/PdfCompressTool.tsx';
+import AdSlot from '../../components/ad-slot.astro';
+import { howTo } from '../../lib/seo/schema';
+
+const jsonLd = howTo(
+  'Compress a PDF under a size limit',
+  'Reduce a PDF to a target file size in your browser, keeping text selectable or flattening scans.',
+  [
+    { name: 'Choose a mode', text: 'Keep the text selectable, flatten to the smallest size, or let Documenter decide automatically.' },
+    { name: 'Set a size limit', text: 'Optionally enter the maximum file size the upload allows.' },
+    { name: 'Add your PDF', text: 'Drag or click to choose your PDF. It is processed on your device.' },
+    { name: 'Download', text: 'Save the compressed PDF, with the before and after sizes shown.' },
+  ],
+);
+---
+
+<BaseLayout
+  title="Compress a PDF to a size limit"
+  description="Compress a PDF under a size limit in your browser — keep the text selectable, or flatten scans for the smallest file. Nothing is uploaded."
+>
+  <script type="application/ld+json" slot="jsonld" set:html={JSON.stringify(jsonLd)} />
+
+  <main id="main-content" class="container section">
+    <div class="prose">
+      <h1>Compress a PDF</h1>
+      <p>
+        Bring a PDF under the size an upload allows. Choose whether to keep the text selectable or
+        flatten the pages for the smallest possible file — all on your own device, with no upload.
+      </p>
+    </div>
+
+    <div style="margin-top:1.5rem;max-width:34rem;">
+      <PdfCompressTool client:visible />
+    </div>
+
+    <div class="prose" style="margin-top:2.5rem;">
+      <h2>Which mode should I use?</h2>
+      <h3>Keep text selectable</h3>
+      <p>
+        Best for PDFs made from a document — letters, forms, statements. The text stays searchable
+        and selectable. Compression is gentle, so it may not reach a very small target.
+      </p>
+      <h3>Smallest size (flatten)</h3>
+      <p>
+        Best for scans and photo-heavy PDFs. Each page becomes an image, which gives reliable control
+        over the final size but makes the text no longer selectable.
+      </p>
+      <h3>Automatic</h3>
+      <p>
+        Documenter inspects the PDF: if it contains real text it keeps it, otherwise it flattens. A
+        good default when you are not sure.
+      </p>
+
+      <h2>If it won't reach your target</h2>
+      <p>
+        In "keep text" mode a PDF can only shrink so far. If you need it smaller, switch to smallest
+        size, which can hit tighter limits by lowering image quality.
+      </p>
+    </div>
+
+    <div class="section" style="margin-top:1rem;">
+      <AdSlot width={728} height={90} clearanceFromPrimaryActionPx={400} />
+    </div>
+  </main>
+</BaseLayout>

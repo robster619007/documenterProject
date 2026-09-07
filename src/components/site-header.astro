@@ -1,0 +1,18 @@
+---
+// Site-wide header with primary navigation. Static, zero JS.
+const links = [
+  { href: '/tools/photo-signature-resize', label: 'Resize photo' },
+  { href: '/tools/compress-pdf', label: 'Compress PDF' },
+  { href: '/tools/image-to-pdf', label: 'Image to PDF' },
+  { href: '/about', label: 'About' },
+];
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="site-header__brand" href="/">Docu<span>menter</span></a>
+    <nav class="site-nav" aria-label="Primary">
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+  </div>
+</header>
