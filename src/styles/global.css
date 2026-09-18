@@ -108,11 +108,19 @@ a:hover {
   flex-wrap: wrap;
 }
 .site-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 800;
   font-size: 1.2rem;
   letter-spacing: -0.02em;
   color: var(--ink);
   text-decoration: none;
+}
+.site-header__logo {
+  display: block;
+  width: 30px;
+  height: 30px;
 }
 .site-header__brand span {
   color: var(--brand);

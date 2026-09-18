@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Documenter logo">
+  <defs>
+    <linearGradient id="dm-front" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6E6BF6" />
+      <stop offset="1" stop-color="#4A3AE3" />
+    </linearGradient>
+    <linearGradient id="dm-back1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#CDD2FA" />
+      <stop offset="1" stop-color="#AEB6F6" />
+    </linearGradient>
+    <linearGradient id="dm-back2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#DEE2FD" />
+      <stop offset="1" stop-color="#C4CBFA" />
+    </linearGradient>
+    <linearGradient id="dm-page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" />
+      <stop offset="1" stop-color="#E9EEFF" />
+    </linearGradient>
+    <linearGradient id="dm-fold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F0A9F2" />
+      <stop offset="1" stop-color="#C138DA" />
+    </linearGradient>
+  </defs>
+  <rect x="104" y="120" width="304" height="150" rx="26" fill="url(#dm-back2)" />
+  <rect x="86" y="146" width="340" height="150" rx="26" fill="url(#dm-back1)" />
+  <path
+    d="M76 214 Q76 190 100 190 H188 Q200 190 207 200 L224 224 Q231 234 243 234 H436 Q460 234 460 258 V430 Q460 454 436 454 H100 Q76 454 76 430 Z"
+    fill="url(#dm-front)"
+  />
+  <path
+    d="M144 252 H392 Q410 252 410 270 V356 L334 432 H144 Q126 432 126 414 V270 Q126 252 144 252 Z"
+    fill="url(#dm-page)"
+  />
+  <path d="M410 356 L334 432 H410 Z" fill="url(#dm-fold)" />
+</svg>
