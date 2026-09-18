@@ -6,13 +6,7 @@ user's device. There is no upload step and no server that sees your documents,
 which you can confirm yourself in the browser's Network tab.
 
 Built with Astro 6 (static output), React 19 (tool islands only), TypeScript and
-Tailwind. See `docs/PROJECT_BRIEF.md` for product context, `docs/PROTOTYPE_SPEC.md`
-for the build plan, and `CLAUDE.md` for the working rules.
-
-> Status: **Prototype complete (Milestones 1–6).** All pages, the conversion
-> engine, the tool UI, the exam preset pages, and the full verification suite are
-> in place.
-
+Tailwind.
 ---
 
 ## What it does
