@@ -103,15 +103,12 @@ export default function MergePdfTool() {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, label } : r)));
   }, []);
 
-  // Reveal/hide the optional label field for a row; focus it when revealing.
+  // Reveal/hide the optional label field for a row. We deliberately do NOT
+  // auto-focus the field: focusing a text input shows its focus ring immediately,
+  // which read as an unwanted blue highlight on click. The user focuses it by
+  // clicking/tabbing into it, which then shows the ring as expected.
   const toggleLabel = useCallback((id: number) => {
-    setRows((prev) => {
-      const next = prev.map((r) => (r.id === id ? { ...r, labelOpen: !r.labelOpen } : r));
-      if (next.find((r) => r.id === id)?.labelOpen) {
-        requestAnimationFrame(() => document.getElementById(`merge-label-${id}`)?.focus());
-      }
-      return next;
-    });
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, labelOpen: !r.labelOpen } : r)));
   }, []);
 
   const removeRow = useCallback((id: number) => {
