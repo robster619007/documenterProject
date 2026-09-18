@@ -402,6 +402,15 @@
   border: 0;
 }
 
+/* On phones the iframe'd PDF can only show its first page, which looks broken, so
+   hide the inline frame there and rely on the "View all pages" viewer. The image
+   preview and the button/viewer are unaffected. */
+@media (max-width: 640px) {
+  .previewFrameBox {
+    display: none;
+  }
+}
+
 /* PDF preview: inline frame plus an "open full PDF" escape hatch for mobile,
    where iframes can't scroll a PDF. */
 .pdfPreviewWrap {

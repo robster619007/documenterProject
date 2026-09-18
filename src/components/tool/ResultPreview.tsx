@@ -30,7 +30,7 @@ function PdfPreview({ url, name }: { url: string; name: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div className={styles.pdfPreviewWrap}>
-      <div className={styles.previewOut}>
+      <div className={`${styles.previewOut} ${styles.previewFrameBox}`}>
         <iframe className={styles.previewFrame} src={url} title={`Preview of ${name}`} />
       </div>
       <button type="button" className={styles.previewOpen} onClick={() => setOpen(true)}>
