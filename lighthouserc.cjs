@@ -40,6 +40,7 @@ const paths = [
   '/tools/photo-signature-resize/',
   '/tools/compress-pdf/',
   '/tools/image-to-pdf/',
+  '/tools/merge-pdf/',
 ];
 
 module.exports = {

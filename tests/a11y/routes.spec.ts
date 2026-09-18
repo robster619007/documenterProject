@@ -11,6 +11,7 @@ const routes = [
   '/tools/photo-signature-resize',
   '/tools/compress-pdf',
   '/tools/image-to-pdf',
+  '/tools/merge-pdf',
 ];
 
 for (const route of routes) {

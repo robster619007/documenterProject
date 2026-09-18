@@ -91,3 +91,47 @@ test('image-to-pdf page builds a PDF from images', async ({ page }) => {
   // The shared ResultPreview embeds the generated PDF.
   await expect(tool.getByTitle(/preview of generated pdf/i)).toBeVisible();
 });
+
+// A plain N-page PDF built in Node, for the merge test.
+async function makePdf(pages: number): Promise<Buffer> {
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  for (let p = 0; p < pages; p++) {
+    doc.addPage([595, 842]).drawText(`Page ${p + 1}`, { x: 50, y: 800, size: 12, font });
+  }
+  return Buffer.from(await doc.save());
+}
+
+test('merge-pdf page merges files in order, inserting a divider for a labelled file', async ({
+  page,
+}) => {
+  await page.goto('/tools/merge-pdf/');
+  const tool = page.getByRole('region', { name: 'PDF merger' });
+  await expect(tool).toHaveAttribute('data-ready', 'true');
+
+  // A = 2 pages, B = 1 page.
+  await tool.locator('input[type="file"]').setInputFiles([
+    { name: 'a.pdf', mimeType: 'application/pdf', buffer: await makePdf(2) },
+    { name: 'b.pdf', mimeType: 'application/pdf', buffer: await makePdf(1) },
+  ]);
+
+  // Labelling the first file inserts one divider page before it.
+  await tool.getByLabel(/section label for a\.pdf/i).fill('Section A');
+  await tool.getByRole('button', { name: /merge 2 pdfs/i }).click();
+
+  const download = tool.getByRole('link', { name: /download pdf/i });
+  await expect(download).toBeVisible({ timeout: 15_000 });
+  const href = await download.getAttribute('href');
+  expect(href).toMatch(/^blob:/);
+  await expect(download).toHaveAttribute('download', /\.pdf$/);
+
+  // Read the merged bytes back and count pages: divider(1) + A(2) + B(1) = 4.
+  const b64 = await page.evaluate(async (url) => {
+    const buf = new Uint8Array(await (await fetch(url)).arrayBuffer());
+    let bin = '';
+    for (const byte of buf) bin += String.fromCharCode(byte);
+    return btoa(bin);
+  }, href!);
+  const merged = await PDFDocument.load(Buffer.from(b64, 'base64'));
+  expect(merged.getPageCount()).toBe(4);
+});

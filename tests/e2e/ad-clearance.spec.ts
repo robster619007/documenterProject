@@ -11,6 +11,7 @@ const routes = [
   '/tools/photo-signature-resize/',
   '/tools/compress-pdf/',
   '/tools/image-to-pdf/',
+  '/tools/merge-pdf/',
 ];
 
 // The smallest vertical gap between two rectangles (0 if they overlap vertically).

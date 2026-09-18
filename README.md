@@ -23,6 +23,8 @@ for the build plan, and `CLAUDE.md` for the working rules.
   flattening scans for the smallest possible file.
 - **Combine images into a single PDF**, one image per page, optionally under a
   size cap.
+- **Merge several PDFs into one**, in any order, with optional labelled divider
+  pages between sections (divider size: match each document, A4, or US Letter).
 
 Input images: JPG, PNG, WebP, HEIC/HEIF, AVIF, GIF, BMP, TIFF. The decoder
 registry is pluggable, so new formats can be added without touching the rest of

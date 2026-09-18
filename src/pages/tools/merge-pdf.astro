@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../layouts/base-layout.astro';
+import MergePdfTool from '../../components/tool/MergePdfTool.tsx';
+import AdSlot from '../../components/ad-slot.astro';
+import { howTo } from '../../lib/seo/schema';
+
+// The merge feature is a self-contained module (its own island + worker). This
+// page is the single place it is mounted, so it can be gated later (e.g. for
+// subscribers) without affecting the other tools.
+const jsonLd = howTo(
+  'Merge PDFs into one file',
+  'Combine several PDFs into a single document in your browser, with optional labelled divider pages between sections.',
+  [
+    { name: 'Add your PDFs', text: 'Drag or click to add the PDF files you want to combine.' },
+    { name: 'Order and label', text: 'Reorder the files, and optionally add a section label to insert a divider page before any file.' },
+    { name: 'Merge', text: 'Documenter combines them into one PDF on your device — text stays selectable.' },
+    { name: 'Download', text: 'Preview the result and download your merged PDF.' },
+  ],
+);
+---
+
+<BaseLayout
+  title="Merge PDFs into one file"
+  description="Combine several PDFs into a single document in your browser, with optional labelled divider pages between sections. Nothing is uploaded."
+>
+  <script type="application/ld+json" slot="jsonld" set:html={JSON.stringify(jsonLd)} />
+
+  <main id="main-content" class="container section">
+    <div class="prose">
+      <h1>Merge PDFs</h1>
+      <p>
+        Combine several PDFs into one document — in the order you choose, and with optional labelled
+        divider pages to separate sections. Everything runs on your own device, with no upload, and
+        the original pages are copied as-is so text stays selectable.
+      </p>
+    </div>
+
+    <div style="margin-top:1.5rem;max-width:34rem;">
+      <MergePdfTool client:visible />
+    </div>
+
+    <div class="prose" style="margin-top:2.5rem;">
+      <h2>Divider pages for labelled sections</h2>
+      <p>
+        Give any file a section label and Documenter inserts a titled divider page just before it —
+        handy when you're assembling one document from many parts. A common use is a job application:
+        merge your qualifications, certificates and references into a single PDF, each behind a clear
+        section heading like "Degree", "Certifications" or "References".
+      </p>
+      <p>
+        Leave a label blank and that file is merged with no divider. You choose the divider page size —
+        <strong>match each document</strong> (so it blends in), <strong>A4</strong>, or
+        <strong>US Letter</strong>.
+      </p>
+
+      <h2>Tips</h2>
+      <ul>
+        <li>Use the up/down controls to set the order — files merge from top to bottom.</li>
+        <li>The merged file keeps selectable text and the original page quality; nothing is flattened.</li>
+        <li>
+          Need the result smaller afterwards? Run it through <a href="/tools/compress-pdf">Compress
+          PDF</a>.
+        </li>
+      </ul>
+    </div>
+
+    <div class="section" style="margin-top:1rem;">
+      <AdSlot width={728} height={90} clearanceFromPrimaryActionPx={400} />
+    </div>
+  </main>
+</BaseLayout>

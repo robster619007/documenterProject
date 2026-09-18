@@ -202,6 +202,79 @@
   cursor: pointer;
 }
 
+/* Reorderable rows with a per-row label (PDF merge) */
+.mergeList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.mergeRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+}
+.mergeRowHead {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.mergeIndex {
+  font-variant-numeric: tabular-nums;
+  color: #475569;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.mergeName {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+.mergeActions {
+  display: flex;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+.moveBtn {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.35rem;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.moveBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.moveBtn:focus-visible,
+.remove:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+.labelInput {
+  width: 100%;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.4rem;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+.labelInput:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
