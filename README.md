@@ -7,6 +7,7 @@ which you can confirm yourself in the browser's Network tab.
 
 Built with Astro 6 (static output), React 19 (tool islands only), TypeScript and
 Tailwind.
+
 ---
 
 ## What it does
