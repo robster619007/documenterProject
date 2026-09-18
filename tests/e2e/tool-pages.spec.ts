@@ -67,6 +67,14 @@ test('compress-pdf page compresses a PDF under a size cap', async ({ page }) => 
   await expect(download).toHaveAttribute('href', /^blob:/);
   // The shared ResultPreview embeds the generated PDF.
   await expect(tool.getByTitle(/preview of compressed pdf/i)).toBeVisible();
+
+  // The in-page viewer opens and renders pages (pdf.js) so mobile can scroll them.
+  await tool.getByRole('button', { name: /view all pages/i }).click();
+  const dialog = page.getByRole('dialog', { name: /preview of compressed pdf/i });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('canvas').first()).toBeVisible({ timeout: 15_000 });
+  await dialog.getByRole('button', { name: /close preview/i }).click();
+  await expect(dialog).toBeHidden();
 });
 
 test('image-to-pdf page builds a PDF from images', async ({ page }) => {

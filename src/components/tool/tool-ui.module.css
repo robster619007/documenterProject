@@ -411,14 +411,17 @@
 }
 .previewOpen {
   align-self: flex-start;
+  padding: 0.5rem 1rem;
+  border: 1px solid #1d4ed8;
+  border-radius: 0.5rem;
+  background: #eff6ff;
+  color: #1d4ed8;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #1d4ed8;
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
+  cursor: pointer;
 }
 .previewOpen:hover {
-  color: #1e40af;
+  background: #dbeafe;
 }
 .previewOpen:focus-visible {
   outline: 3px solid #1d4ed8;
@@ -428,6 +431,78 @@
   margin: 0;
   font-size: 0.8rem;
   color: #475569;
+}
+
+/* In-page PDF viewer modal (works on mobile, unlike an iframe'd PDF). */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.62);
+}
+.modalPanel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 60rem;
+  height: 90vh;
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.35);
+}
+.modalHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+.modalTitle {
+  font-weight: 700;
+  color: #0f172a;
+}
+.modalClose {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.4rem;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.modalClose:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+.modalScroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #f1f5f9;
+  padding: 0.75rem;
+}
+.modalPages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+.modalPage {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  background: #ffffff;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.18);
 }
 
 
