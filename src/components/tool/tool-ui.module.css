@@ -310,11 +310,6 @@
 .rowBtnTag {
   color: #1d4ed8;
 }
-.rowBtnActive {
-  background: #1d4ed8;
-  color: #ffffff;
-  border-color: #1d4ed8;
-}
 .rowBtnDanger:hover:not(:disabled) {
   background: #fef2f2;
   color: #b91c1c;

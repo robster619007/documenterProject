@@ -262,7 +262,7 @@ export default function MergePdfTool() {
                     </button>
                     <button
                       type="button"
-                      className={`${styles.rowBtn} ${styles.rowBtnTag} ${r.labelOpen ? styles.rowBtnActive : ''}`}
+                      className={`${styles.rowBtn} ${styles.rowBtnTag}`}
                       onClick={() => toggleLabel(r.id)}
                       aria-label={`Add section label for ${r.file.name}`}
                       aria-expanded={r.labelOpen}
