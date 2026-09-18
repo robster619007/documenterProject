@@ -103,12 +103,18 @@ export default function MergePdfTool() {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, label } : r)));
   }, []);
 
-  // Reveal/hide the optional label field for a row. We deliberately do NOT
-  // auto-focus the field: focusing a text input shows its focus ring immediately,
-  // which read as an unwanted blue highlight on click. The user focuses it by
-  // clicking/tabbing into it, which then shows the ring as expected.
+  // Reveal or remove the optional label field for a row. Hiding it clears the
+  // text (so it's truly removed — no lingering hidden label, and reopening starts
+  // empty). We don't auto-focus on open: focusing a text input shows its focus
+  // ring immediately, which read as an unwanted blue highlight on click.
   const toggleLabel = useCallback((id: number) => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, labelOpen: !r.labelOpen } : r)));
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.id !== id) return r;
+        const labelOpen = !r.labelOpen;
+        return { ...r, labelOpen, label: labelOpen ? r.label : '' };
+      }),
+    );
   }, []);
 
   const removeRow = useCallback((id: number) => {
@@ -261,12 +267,12 @@ export default function MergePdfTool() {
                       type="button"
                       className={`${styles.rowBtn} ${styles.rowBtnTag}`}
                       onClick={() => toggleLabel(r.id)}
-                      aria-label={`Add section label for ${r.file.name}`}
+                      aria-label={`${r.labelOpen ? 'Remove' : 'Add'} section label for ${r.file.name}`}
                       aria-expanded={r.labelOpen}
                     >
                       <IconTag />
                       <span className={styles.rowTip} aria-hidden="true">
-                        {r.labelOpen ? 'Hide label' : 'Add label'}
+                        {r.labelOpen ? 'Remove label' : 'Add label'}
                       </span>
                     </button>
                     <button
