@@ -32,11 +32,22 @@ function PdfPreview({ url, name }: { url: string; name: string }) {
     <div className={styles.pdfPreviewWrap}>
       <div className={`${styles.previewOut} ${styles.previewFrameBox}`}>
         <iframe className={styles.previewFrame} src={url} title={`Preview of ${name}`} />
+        {/* Desktop: a fullscreen control on the inline preview opens the pop-in viewer. */}
+        <button
+          type="button"
+          className={styles.fullscreenBtn}
+          onClick={() => setOpen(true)}
+          aria-label="View fullscreen"
+          title="View fullscreen"
+        >
+          ⛶
+        </button>
       </div>
+      {/* Mobile only: the inline frame is hidden there, so offer a button instead. */}
       <button type="button" className={styles.previewOpen} onClick={() => setOpen(true)}>
         View all pages ⤢
       </button>
-      <p className={styles.pdfNote}>Opens a scrollable viewer here on the page — works on mobile too.</p>
+      <p className={styles.previewHint}>Tap “View all pages” to scroll the whole document.</p>
       {open && <PdfModal url={url} name={name} onClose={() => setOpen(false)} />}
     </div>
   );

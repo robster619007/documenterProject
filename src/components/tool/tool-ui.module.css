@@ -402,11 +402,54 @@
   border: 0;
 }
 
-/* On phones the iframe'd PDF can only show its first page, which looks broken, so
-   hide the inline frame there and rely on the "View all pages" viewer. The image
-   preview and the button/viewer are unaffected. */
+/* The inline PDF frame wrapper is positioned so the fullscreen button can sit on it. */
+.previewFrameBox {
+  position: relative;
+}
+/* Fullscreen control on the desktop inline preview → opens the pop-in viewer. */
+.fullscreenBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1d4ed8;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.fullscreenBtn:hover {
+  background: #ffffff;
+}
+.fullscreenBtn:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+.previewHint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+/* Phones: the iframe'd PDF can only show its first page, so hide the inline frame
+   (and its fullscreen button) and show the "View all pages" button + hint instead. */
 @media (max-width: 640px) {
   .previewFrameBox {
+    display: none;
+  }
+}
+/* Desktop: the inline frame + fullscreen button are enough, so hide the mobile
+   button and hint. */
+@media (min-width: 641px) {
+  .previewOpen,
+  .previewHint {
     display: none;
   }
 }

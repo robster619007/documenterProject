@@ -68,8 +68,9 @@ test('compress-pdf page compresses a PDF under a size cap', async ({ page }) => 
   // The shared ResultPreview embeds the generated PDF.
   await expect(tool.getByTitle(/preview of compressed pdf/i)).toBeVisible();
 
-  // The in-page viewer opens and renders pages (pdf.js) so mobile can scroll them.
-  await tool.getByRole('button', { name: /view all pages/i }).click();
+  // The in-page viewer opens and renders pages (pdf.js). On desktop it's the
+  // fullscreen button on the inline preview; on mobile it's the "View all pages" button.
+  await tool.getByRole('button', { name: /view fullscreen/i }).click();
   const dialog = page.getByRole('dialog', { name: /preview of compressed pdf/i });
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('canvas').first()).toBeVisible({ timeout: 15_000 });
