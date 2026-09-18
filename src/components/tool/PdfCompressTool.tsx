@@ -245,9 +245,6 @@ export default function PdfCompressTool() {
             </strong>
           </p>
           <ResultPreview url={result.url} kind="pdf" label="compressed PDF" downloadName="compressed.pdf" />
-          <a className={styles.download} href={result.url} download="compressed.pdf" data-primary-action>
-            Download PDF
-          </a>
         </div>
       )}
     </section>

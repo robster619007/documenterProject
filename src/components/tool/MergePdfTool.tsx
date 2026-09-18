@@ -286,14 +286,6 @@ export default function MergePdfTool() {
             <strong className={styles.ok}>{formatSize(result.afterBytes)}</strong> merged PDF ready
           </p>
           <ResultPreview url={result.url} kind="pdf" label="merged PDF" downloadName={outputName(filename)} />
-          <a
-            className={styles.download}
-            href={result.url}
-            download={outputName(filename)}
-            data-primary-action
-          >
-            Download PDF
-          </a>
         </div>
       )}
     </section>

@@ -94,13 +94,20 @@ function PdfPreview({ url, name, downloadName }: { url: string; name: string; do
     <div className={styles.pdfPreviewWrap}>
       {/* Desktop: inline frame with a corner expand-on-hover toolbar. */}
       <div className={`${styles.previewOut} ${styles.previewFrameBox}`}>
-        <iframe className={styles.previewFrame} src={url} title={`Preview of ${name}`} />
+        {/* #toolbar=0 hides the browser's own PDF toolbar; our toolbar replaces it. */}
+        <iframe className={styles.previewFrame} src={`${url}#toolbar=0`} title={`Preview of ${name}`} />
         <div className={styles.pdfToolbar}>
           <button type="button" className={styles.pdfToolBtn} onClick={() => setOpen(true)} aria-label="Fullscreen">
             <IconFullscreen />
             <span className={styles.pdfToolLbl} aria-hidden="true">Fullscreen</span>
           </button>
-          <button type="button" className={styles.pdfToolBtn} onClick={download} aria-label="Download">
+          <button
+            type="button"
+            className={styles.pdfToolBtn}
+            onClick={download}
+            aria-label="Download"
+            data-primary-action
+          >
             <IconDownload />
             <span className={styles.pdfToolLbl} aria-hidden="true">Download</span>
           </button>
@@ -180,7 +187,7 @@ function MobileThumb({
           <IconFullscreen />
           Fullscreen
         </button>
-        <button type="button" className={styles.pdfBarItem} onClick={onDownload}>
+        <button type="button" className={styles.pdfBarItem} onClick={onDownload} data-primary-action>
           <IconDownload />
           Download
         </button>

@@ -62,11 +62,8 @@ test('compress-pdf page compresses a PDF under a size cap', async ({ page }) => 
   await tool.getByRole('checkbox', { name: /compress to a size limit/i }).check();
   await tool.getByRole('button', { name: /compress pdf/i }).click();
 
-  const download = tool.getByRole('link', { name: /download pdf/i });
-  await expect(download).toBeVisible({ timeout: 15_000 });
-  await expect(download).toHaveAttribute('href', /^blob:/);
   // The shared ResultPreview embeds the generated PDF.
-  await expect(tool.getByTitle(/preview of compressed pdf/i)).toBeVisible();
+  await expect(tool.getByTitle(/preview of compressed pdf/i)).toBeVisible({ timeout: 15_000 });
 
   // The in-page viewer opens and renders pages (pdf.js). On desktop it's the
   // Fullscreen button in the inline preview's corner toolbar.
@@ -94,11 +91,8 @@ test('image-to-pdf page builds a PDF from images', async ({ page }) => {
   await expect(tool.getByRole('button', { name: /make pdf \(2 pages\)/i })).toBeVisible();
   await tool.getByRole('button', { name: /make pdf/i }).click();
 
-  const download = tool.getByRole('link', { name: /download pdf/i });
-  await expect(download).toBeVisible({ timeout: 15_000 });
-  await expect(download).toHaveAttribute('href', /^blob:/);
   // The shared ResultPreview embeds the generated PDF.
-  await expect(tool.getByTitle(/preview of generated pdf/i)).toBeVisible();
+  await expect(tool.getByTitle(/preview of generated pdf/i)).toBeVisible({ timeout: 15_000 });
 });
 
 // A plain N-page PDF built in Node, for the merge test.
@@ -128,19 +122,18 @@ test('merge-pdf page merges files in order, inserting a divider for a labelled f
   await tool.getByLabel(/section label for a\.pdf/i).fill('Section A');
   await tool.getByRole('button', { name: /merge 2 pdfs/i }).click();
 
-  const download = tool.getByRole('link', { name: /download pdf/i });
-  await expect(download).toBeVisible({ timeout: 15_000 });
-  const href = await download.getAttribute('href');
-  expect(href).toMatch(/^blob:/);
-  await expect(download).toHaveAttribute('download', /\.pdf$/);
-
-  // Read the merged bytes back and count pages: divider(1) + A(2) + B(1) = 4.
+  // Read the merged bytes back from the preview iframe and count pages:
+  // divider(1) + A(2) + B(1) = 4.
+  const frame = tool.locator('iframe');
+  await expect(frame).toBeVisible({ timeout: 15_000 });
+  const src = (await frame.getAttribute('src'))!.split('#')[0];
+  expect(src).toMatch(/^blob:/);
   const b64 = await page.evaluate(async (url) => {
     const buf = new Uint8Array(await (await fetch(url)).arrayBuffer());
     let bin = '';
     for (const byte of buf) bin += String.fromCharCode(byte);
     return btoa(bin);
-  }, href!);
+  }, src);
   const merged = await PDFDocument.load(Buffer.from(b64, 'base64'));
   expect(merged.getPageCount()).toBe(4);
 });
