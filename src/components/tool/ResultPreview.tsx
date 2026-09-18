@@ -1,23 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import styles from './tool-ui.module.css';
 
 // A single, shared preview of a generated file, used by every tool's result panel
 // so the preview markup and behaviour live in one place (no per-tool copy).
 //  - kind 'image' → an inline image, shown at actual size when it fits.
-//  - kind 'pdf'   → a clean inline preview with side actions (fullscreen, download,
-//    print). Desktop shows an <iframe> with a corner toolbar whose buttons expand
-//    to reveal labels on hover; mobile shows a first-page thumbnail (rendered with
-//    pdf.js) with a bottom action bar. Fullscreen opens an in-page scrollable viewer
-//    (mobile can't scroll an iframe'd PDF). pdf.js is lazy-loaded only when needed.
+//  - kind 'pdf'   → we render the pages ourselves with pdf.js (no browser iframe),
+//    so the chrome and scrollbar are fully ours on every browser. Desktop shows a
+//    scrollable inline preview with a corner toolbar (fullscreen/download/print,
+//    labels expand on hover); mobile shows a first-page thumbnail with a bottom
+//    action bar. Fullscreen opens an in-page scrollable viewer. pdf.js is lazy-loaded.
 interface Props {
   url: string; // object URL of the file
   kind: 'image' | 'pdf';
   label?: string; // accessible description of what is shown
-  downloadName?: string; // filename used by the toolbar's Download action (pdf only)
+  downloadName?: string; // filename used by the Download action (pdf only)
 }
 
-// Lazy, memoised pdf.js loader (worker configured once). Only fetched when a viewer
-// or thumbnail actually needs it, so it never adds to initial page load.
+// Lazy, memoised pdf.js loader (worker configured once). Only fetched when a preview
+// actually needs it, so it never adds to initial page load.
 let pdfjsPromise: Promise<typeof import('pdfjs-dist')> | null = null;
 function getPdfjs(): Promise<typeof import('pdfjs-dist')> {
   if (!pdfjsPromise) {
@@ -29,6 +29,73 @@ function getPdfjs(): Promise<typeof import('pdfjs-dist')> {
     })();
   }
   return pdfjsPromise;
+}
+
+// Cap rendered pages so a very large document can't exhaust memory.
+const MAX_PAGES = 50;
+
+// Renders a PDF's pages (or just the first) as canvases into a ref'd container.
+// Skips work when `mediaQuery` is given and doesn't match (the container is hidden).
+function usePdfRender(
+  url: string,
+  ref: RefObject<HTMLDivElement | null>,
+  maxPages: number,
+  firstPageOnly: boolean,
+  mediaQuery?: string,
+) {
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [info, setInfo] = useState<{ shown: number; total: number } | null>(null);
+
+  useEffect(() => {
+    if (mediaQuery && !window.matchMedia(mediaQuery).matches) {
+      setState('ready');
+      return;
+    }
+    let cancelled = false;
+    let task: { destroy: () => void } | undefined;
+    (async () => {
+      setState('loading');
+      setInfo(null);
+      try {
+        const pdfjs = await getPdfjs();
+        const loadingTask = pdfjs.getDocument({ url });
+        task = loadingTask;
+        const pdf = await loadingTask.promise;
+        if (cancelled) return;
+        const el = ref.current;
+        if (!el) return;
+        el.replaceChildren();
+        const cssWidth = Math.max(180, Math.min(900, el.clientWidth - 8));
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const total = pdf.numPages;
+        const shown = firstPageOnly ? 1 : Math.min(total, maxPages);
+        for (let i = 1; i <= shown; i++) {
+          const page = await pdf.getPage(i);
+          const scale = (cssWidth / page.getViewport({ scale: 1 }).width) * dpr;
+          const viewport = page.getViewport({ scale });
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.ceil(viewport.width);
+          canvas.height = Math.ceil(viewport.height);
+          canvas.className = styles.renderedPage;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) continue;
+          await page.render({ canvas: null, canvasContext: ctx, viewport }).promise;
+          if (cancelled) return;
+          el.appendChild(canvas);
+        }
+        if (!firstPageOnly && total > shown) setInfo({ shown, total });
+        setState('ready');
+      } catch {
+        if (!cancelled) setState('error');
+      }
+    })();
+    return () => {
+      cancelled = true;
+      task?.destroy();
+    };
+  }, [url, maxPages, firstPageOnly, mediaQuery, ref]);
+
+  return { state, info };
 }
 
 const IconFullscreen = () => (
@@ -92,42 +159,64 @@ function PdfPreview({ url, name, downloadName }: { url: string; name: string; do
 
   return (
     <div className={styles.pdfPreviewWrap}>
-      {/* Desktop: inline frame with a corner expand-on-hover toolbar. */}
-      <div className={`${styles.previewOut} ${styles.previewFrameBox}`}>
-        {/* #toolbar=0 hides the browser's own PDF toolbar; our toolbar replaces it. */}
-        <iframe className={styles.previewFrame} src={`${url}#toolbar=0`} title={`Preview of ${name}`} />
-        <div className={styles.pdfToolbar}>
-          <button type="button" className={styles.pdfToolBtn} onClick={() => setOpen(true)} aria-label="Fullscreen">
-            <IconFullscreen />
-            <span className={styles.pdfToolLbl} aria-hidden="true">Fullscreen</span>
-          </button>
-          <button
-            type="button"
-            className={styles.pdfToolBtn}
-            onClick={download}
-            aria-label="Download"
-            data-primary-action
-          >
-            <IconDownload />
-            <span className={styles.pdfToolLbl} aria-hidden="true">Download</span>
-          </button>
-          <button type="button" className={styles.pdfToolBtn} onClick={print} aria-label="Print">
-            <IconPrint />
-            <span className={styles.pdfToolLbl} aria-hidden="true">Print</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile: first-page thumbnail with a bottom action bar. */}
+      <InlinePreview url={url} name={name} onFullscreen={() => setOpen(true)} onDownload={download} onPrint={print} />
       <MobileThumb url={url} onFullscreen={() => setOpen(true)} onDownload={download} onPrint={print} />
-
       {open && <PdfModal url={url} name={name} onClose={() => setOpen(false)} />}
     </div>
   );
 }
 
-// Renders the PDF's first page (pdf.js) as a thumbnail for the mobile layout, with a
-// bottom action bar. Only renders on small screens (the element is hidden on desktop).
+// Desktop: scrollable inline preview (our own render) with the corner expand toolbar.
+function InlinePreview({
+  url,
+  name,
+  onFullscreen,
+  onDownload,
+  onPrint,
+}: {
+  url: string;
+  name: string;
+  onFullscreen: () => void;
+  onDownload: () => void;
+  onPrint: () => void;
+}) {
+  const pagesRef = useRef<HTMLDivElement>(null);
+  const { state, info } = usePdfRender(url, pagesRef, MAX_PAGES, false, '(min-width: 641px)');
+
+  return (
+    <div className={`${styles.previewOut} ${styles.previewFrameBox}`}>
+      <div
+        ref={pagesRef}
+        className={`${styles.inlineScroll} ${styles.hoverScroll}`}
+        role="group"
+        aria-label={`Preview of ${name}`}
+      />
+      {state === 'loading' && <p className={styles.inlineOverlay}>Rendering preview…</p>}
+      {state === 'error' && <p className={styles.inlineOverlay}>Preview unavailable — use Download.</p>}
+      {info && (
+        <p className={styles.inlineFoot}>
+          First {info.shown} of {info.total} pages — open fullscreen or download for all
+        </p>
+      )}
+      <div className={styles.pdfToolbar}>
+        <button type="button" className={styles.pdfToolBtn} onClick={onFullscreen} aria-label="Fullscreen">
+          <IconFullscreen />
+          <span className={styles.pdfToolLbl} aria-hidden="true">Fullscreen</span>
+        </button>
+        <button type="button" className={styles.pdfToolBtn} onClick={onDownload} aria-label="Download" data-primary-action>
+          <IconDownload />
+          <span className={styles.pdfToolLbl} aria-hidden="true">Download</span>
+        </button>
+        <button type="button" className={styles.pdfToolBtn} onClick={onPrint} aria-label="Print">
+          <IconPrint />
+          <span className={styles.pdfToolLbl} aria-hidden="true">Print</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Mobile: first-page thumbnail with a bottom action bar.
 function MobileThumb({
   url,
   onFullscreen,
@@ -139,49 +228,12 @@ function MobileThumb({
   onDownload: () => void;
   onPrint: () => void;
 }) {
-  const holder = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!window.matchMedia('(max-width: 640px)').matches) return; // desktop: skip render
-    let cancelled = false;
-    let task: { destroy: () => void } | undefined;
-    (async () => {
-      try {
-        const pdfjs = await getPdfjs();
-        const loadingTask = pdfjs.getDocument({ url });
-        task = loadingTask;
-        const pdf = await loadingTask.promise;
-        if (cancelled) return;
-        const el = holder.current;
-        if (!el) return;
-        el.replaceChildren();
-        const page = await pdf.getPage(1);
-        const cssWidth = Math.max(180, el.clientWidth);
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const scale = (cssWidth / page.getViewport({ scale: 1 }).width) * dpr;
-        const viewport = page.getViewport({ scale });
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.ceil(viewport.width);
-        canvas.height = Math.ceil(viewport.height);
-        canvas.className = styles.thumbCanvas;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        await page.render({ canvas: null, canvasContext: ctx, viewport }).promise;
-        if (cancelled) return;
-        el.appendChild(canvas);
-      } catch {
-        /* leave the thumbnail empty; the action bar still works */
-      }
-    })();
-    return () => {
-      cancelled = true;
-      task?.destroy();
-    };
-  }, [url]);
+  const pagesRef = useRef<HTMLDivElement>(null);
+  usePdfRender(url, pagesRef, 1, true, '(max-width: 640px)');
 
   return (
     <div className={styles.pdfThumb}>
-      <div ref={holder} className={styles.thumbPages} />
+      <div ref={pagesRef} className={styles.thumbPages} />
       <div className={styles.pdfBottomBar}>
         <button type="button" className={styles.pdfBarItem} onClick={onFullscreen}>
           <IconFullscreen />
@@ -200,14 +252,10 @@ function MobileThumb({
   );
 }
 
-// Cap rendered pages so a very large document can't exhaust a phone's memory.
-const MAX_PAGES = 50;
-
 function PdfModal({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
   const pagesRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [info, setInfo] = useState<{ shown: number; total: number } | null>(null);
+  const { state, info } = usePdfRender(url, pagesRef, MAX_PAGES, false);
 
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
@@ -225,51 +273,6 @@ function PdfModal({ url, name, onClose }: { url: string; name: string; onClose: 
     };
   }, [onClose]);
 
-  useEffect(() => {
-    let cancelled = false;
-    let task: { destroy: () => void } | undefined;
-    (async () => {
-      setState('loading');
-      setInfo(null);
-      try {
-        const pdfjs = await getPdfjs();
-        const loadingTask = pdfjs.getDocument({ url });
-        task = loadingTask;
-        const pdf = await loadingTask.promise;
-        if (cancelled) return;
-        const holderEl = pagesRef.current;
-        if (!holderEl) return;
-        holderEl.replaceChildren();
-        const cssWidth = Math.max(240, Math.min(900, holderEl.clientWidth - 8));
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const total = pdf.numPages;
-        const shown = Math.min(total, MAX_PAGES);
-        for (let i = 1; i <= shown; i++) {
-          const page = await pdf.getPage(i);
-          const scale = (cssWidth / page.getViewport({ scale: 1 }).width) * dpr;
-          const viewport = page.getViewport({ scale });
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.ceil(viewport.width);
-          canvas.height = Math.ceil(viewport.height);
-          canvas.className = styles.modalPage;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) continue;
-          await page.render({ canvas: null, canvasContext: ctx, viewport }).promise;
-          if (cancelled) return;
-          holderEl.appendChild(canvas);
-        }
-        if (total > shown) setInfo({ shown, total });
-        setState('ready');
-      } catch {
-        if (!cancelled) setState('error');
-      }
-    })();
-    return () => {
-      cancelled = true;
-      task?.destroy();
-    };
-  }, [url]);
-
   return (
     <div
       className={styles.modalOverlay}
@@ -281,7 +284,7 @@ function PdfModal({ url, name, onClose }: { url: string; name: string; onClose: 
         <button type="button" ref={closeRef} className={styles.modalClose} onClick={onClose} aria-label="Close preview">
           ✕
         </button>
-        <div className={styles.modalScroll}>
+        <div className={`${styles.modalScroll} ${styles.hoverScroll}`}>
           <div ref={pagesRef} className={styles.modalPages} />
           {state === 'loading' && <p className={styles.pdfNote}>Rendering pages…</p>}
           {state === 'error' && (
