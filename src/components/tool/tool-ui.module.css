@@ -603,6 +603,32 @@
   -webkit-overflow-scrolling: touch;
   background: #f1f5f9;
   padding: 0.75rem;
+  /* Scrollbar hidden at rest; a thin accent thumb fades in on hover/focus. */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.2s ease;
+}
+.modalScroll:hover,
+.modalScroll:focus-within {
+  scrollbar-color: #1d4ed8 transparent;
+}
+.modalScroll::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+.modalScroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modalScroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 8px;
+}
+.modalScroll:hover::-webkit-scrollbar-thumb,
+.modalScroll:focus-within::-webkit-scrollbar-thumb {
+  background: #1d4ed8;
+}
+.modalScroll::-webkit-scrollbar-thumb:hover {
+  background: #1e40af;
 }
 .modalPages {
   display: flex;
