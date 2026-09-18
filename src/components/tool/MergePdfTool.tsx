@@ -14,7 +14,21 @@ interface Row {
   id: number;
   file: File;
   label: string;
+  labelOpen: boolean; // whether the optional label field is revealed
 }
+
+const IconUp = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
+);
+const IconDown = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
+);
+const IconTag = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L3 13V4a1 1 0 0 1 1-1h9l7.59 7.59a2 2 0 0 1 0 2.82Z" /><circle cx="7.5" cy="7.5" r="1.3" /></svg>
+);
+const IconTrash = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>
+);
 
 interface Result {
   beforeBytes: number;
@@ -76,7 +90,10 @@ export default function MergePdfTool() {
     if (pdfs.length === 0) return;
     if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
     resultUrlRef.current = null;
-    setRows((prev) => [...prev, ...pdfs.map((file) => ({ id: nextId.current++, file, label: '' }))]);
+    setRows((prev) => [
+      ...prev,
+      ...pdfs.map((file) => ({ id: nextId.current++, file, label: '', labelOpen: false })),
+    ]);
     setResult(null);
     setError('');
     setStatus('ready');
@@ -84,6 +101,17 @@ export default function MergePdfTool() {
 
   const setLabel = useCallback((id: number, label: string) => {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, label } : r)));
+  }, []);
+
+  // Reveal/hide the optional label field for a row; focus it when revealing.
+  const toggleLabel = useCallback((id: number) => {
+    setRows((prev) => {
+      const next = prev.map((r) => (r.id === id ? { ...r, labelOpen: !r.labelOpen } : r));
+      if (next.find((r) => r.id === id)?.labelOpen) {
+        requestAnimationFrame(() => document.getElementById(`merge-label-${id}`)?.focus());
+      }
+      return next;
+    });
   }, []);
 
   const removeRow = useCallback((id: number) => {
@@ -110,7 +138,7 @@ export default function MergePdfTool() {
       const files: MergePdfInput[] = await Promise.all(
         rows.map(async (r) => ({
           bytes: await r.file.arrayBuffer(),
-          label: r.label.trim() || undefined,
+          label: r.labelOpen && r.label.trim() ? r.label.trim() : undefined,
           name: r.file.name,
         })),
       );
@@ -211,43 +239,67 @@ export default function MergePdfTool() {
                   {r.file.name} — {formatSize(r.file.size)}
                 </span>
                 {status !== 'working' && (
-                  <div className={styles.mergeActions}>
+                  <div className={styles.rowActions}>
                     <button
                       type="button"
-                      className={styles.moveBtn}
+                      className={styles.rowBtn}
                       onClick={() => move(i, -1)}
                       disabled={i === 0}
                       aria-label={`Move ${r.file.name} up`}
                     >
-                      ↑
+                      <IconUp />
+                      <span className={styles.rowTip} aria-hidden="true">Move up</span>
                     </button>
                     <button
                       type="button"
-                      className={styles.moveBtn}
+                      className={styles.rowBtn}
                       onClick={() => move(i, 1)}
                       disabled={i === rows.length - 1}
                       aria-label={`Move ${r.file.name} down`}
                     >
-                      ↓
+                      <IconDown />
+                      <span className={styles.rowTip} aria-hidden="true">Move down</span>
                     </button>
                     <button
                       type="button"
-                      className={styles.remove}
-                      onClick={() => removeRow(r.id)}
+                      className={`${styles.rowBtn} ${styles.rowBtnTag} ${r.labelOpen ? styles.rowBtnActive : ''}`}
+                      onClick={() => toggleLabel(r.id)}
+                      aria-label={`Add section label for ${r.file.name}`}
+                      aria-expanded={r.labelOpen}
                     >
-                      Remove
+                      <IconTag />
+                      <span className={styles.rowTip} aria-hidden="true">
+                        {r.labelOpen ? 'Hide label' : 'Add label'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.rowBtn} ${styles.rowBtnDanger}`}
+                      onClick={() => removeRow(r.id)}
+                      aria-label={`Remove ${r.file.name}`}
+                    >
+                      <IconTrash />
+                      <span className={styles.rowTip} aria-hidden="true">Remove</span>
                     </button>
                   </div>
                 )}
               </div>
-              <input
-                className={styles.labelInput}
-                type="text"
-                value={r.label}
-                placeholder="Optional section label (adds a divider page before this file)"
-                aria-label={`Section label for ${r.file.name}`}
-                onChange={(e) => setLabel(r.id, e.target.value)}
-              />
+              <div className={`${styles.labelSlot} ${r.labelOpen ? styles.labelSlotOpen : ''}`}>
+                <div className={styles.labelSlotInner}>
+                  <div className={styles.labelFieldWrap}>
+                    <span className={styles.labelTag} aria-hidden="true"><IconTag /></span>
+                    <input
+                      id={`merge-label-${r.id}`}
+                      className={styles.labelInput}
+                      type="text"
+                      value={r.label}
+                      placeholder="Section label — adds a divider page before this file"
+                      aria-label={`Section label for ${r.file.name}`}
+                      onChange={(e) => setLabel(r.id, e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
             </li>
           ))}
         </ol>

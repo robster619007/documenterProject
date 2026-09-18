@@ -123,8 +123,10 @@ test('merge-pdf page merges files in order, inserting a divider for a labelled f
     { name: 'b.pdf', mimeType: 'application/pdf', buffer: await makePdf(1) },
   ]);
 
-  // Labelling the first file inserts one divider page before it.
-  await tool.getByLabel(/section label for a\.pdf/i).fill('Section A');
+  // Reveal the optional label field (tag button), then label the first file —
+  // which inserts one divider page before it.
+  await tool.getByRole('button', { name: /add section label for a\.pdf/i }).click();
+  await tool.getByRole('textbox', { name: /section label for a\.pdf/i }).fill('Section A');
   await tool.getByRole('button', { name: /merge 2 pdfs/i }).click();
 
   // Preview appears, then capture the toolbar download and count pages:

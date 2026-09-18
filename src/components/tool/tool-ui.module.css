@@ -263,7 +263,7 @@
 }
 .labelInput {
   width: 100%;
-  padding: 0.4rem 0.55rem;
+  padding: 0.45rem 0.6rem 0.45rem 2rem;
   border: 1px solid #cbd5e1;
   border-radius: 0.4rem;
   background: #ffffff;
@@ -273,6 +273,111 @@
 .labelInput:focus-visible {
   outline: 3px solid #1d4ed8;
   outline-offset: 2px;
+}
+
+/* Merge row action buttons: compact icons with a tooltip above on hover/focus. */
+.rowActions {
+  display: flex;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  align-items: center;
+}
+.rowBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  cursor: pointer;
+}
+.rowBtn svg {
+  width: 16px;
+  height: 16px;
+}
+.rowBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.rowBtn:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+.rowBtnTag {
+  color: #1d4ed8;
+}
+.rowBtnActive {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+.rowBtnDanger:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.rowTip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #17172a;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 3;
+}
+.rowBtn:hover .rowTip,
+.rowBtn:focus-visible .rowTip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Optional label field revealed by the tag button (slides open). */
+.labelSlot {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.22s ease;
+}
+.labelSlotOpen {
+  grid-template-rows: 1fr;
+}
+.labelSlotInner {
+  overflow: hidden;
+}
+.labelFieldWrap {
+  position: relative;
+  padding-top: 0.5rem;
+}
+.labelTag {
+  position: absolute;
+  left: 0.55rem;
+  top: calc(50% + 0.25rem);
+  transform: translateY(-50%);
+  display: inline-flex;
+  color: #64748b;
+  pointer-events: none;
+}
+.labelTag svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .labelSlot,
+  .rowTip {
+    transition: none;
+  }
 }
 
 .actions {
