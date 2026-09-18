@@ -232,7 +232,7 @@ export default function ImageToPdfTool() {
             </strong>{' '}
             PDF ready
           </p>
-          <ResultPreview url={result.url} kind="pdf" label="generated PDF" />
+          <ResultPreview url={result.url} kind="pdf" label="generated PDF" downloadName="images.pdf" />
           <a className={styles.download} href={result.url} download="images.pdf" data-primary-action>
             Download PDF
           </a>

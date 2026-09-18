@@ -402,83 +402,143 @@
   border: 0;
 }
 
-/* The inline PDF frame wrapper is positioned so the fullscreen button can sit on it. */
-.previewFrameBox {
-  position: relative;
-}
-/* Fullscreen control on the desktop inline preview → opens the pop-in viewer. */
-.fullscreenBtn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 0.4rem;
-  background: rgba(255, 255, 255, 0.92);
-  color: #1d4ed8;
-  font-size: 1.15rem;
-  line-height: 1;
-  cursor: pointer;
-}
-.fullscreenBtn:hover {
-  background: #ffffff;
-}
-.fullscreenBtn:focus-visible {
-  outline: 3px solid #1d4ed8;
-  outline-offset: 2px;
-}
-.previewHint {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #475569;
-}
-
-/* Phones: the iframe'd PDF can only show its first page, so hide the inline frame
-   (and its fullscreen button) and show the "View all pages" button + hint instead. */
-@media (max-width: 640px) {
-  .previewFrameBox {
-    display: none;
-  }
-}
-/* Desktop: the inline frame + fullscreen button are enough, so hide the mobile
-   button and hint. */
-@media (min-width: 641px) {
-  .previewOpen,
-  .previewHint {
-    display: none;
-  }
-}
-
-/* PDF preview: inline frame plus an "open full PDF" escape hatch for mobile,
-   where iframes can't scroll a PDF. */
 .pdfPreviewWrap {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
 }
-.previewOpen {
-  align-self: flex-start;
-  padding: 0.5rem 1rem;
-  border: 1px solid #1d4ed8;
+
+/* The inline PDF frame wrapper is positioned so the toolbar can sit on it. */
+.previewFrameBox {
+  position: relative;
+}
+
+/* Desktop (A·Expand): corner icon buttons that grow to reveal a label on hover. */
+.pdfToolbar {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+.pdfToolBtn {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  height: 2.15rem;
+  padding: 0 0.5rem;
+  border: 1px solid #cbd5e1;
   border-radius: 0.5rem;
-  background: #eff6ff;
+  background: rgba(255, 255, 255, 0.94);
   color: #1d4ed8;
-  font-size: 0.95rem;
-  font-weight: 600;
   cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.14);
 }
-.previewOpen:hover {
-  background: #dbeafe;
+.pdfToolBtn:hover,
+.pdfToolBtn:focus-visible {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
 }
-.previewOpen:focus-visible {
+.pdfToolBtn:focus-visible {
   outline: 3px solid #1d4ed8;
   outline-offset: 2px;
 }
+.pdfToolBtn svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.pdfToolLbl {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: max-width 0.18s ease, opacity 0.18s ease, margin 0.18s ease;
+}
+.pdfToolBtn:hover .pdfToolLbl,
+.pdfToolBtn:focus-visible .pdfToolLbl {
+  max-width: 8rem;
+  opacity: 1;
+  margin-right: 0.4rem;
+}
+
+/* Mobile (M4): first-page thumbnail with a translucent action bar across the bottom. */
+.pdfThumb {
+  position: relative;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #f1f5f9;
+  max-height: 20rem;
+}
+.thumbPages {
+  display: block;
+  min-height: 8rem;
+}
+.thumbCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.pdfBottomBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-around;
+  gap: 0.25rem;
+  padding: 0.6rem 0.4rem;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.74), rgba(15, 23, 42, 0));
+}
+.pdfBarItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pdfBarItem svg {
+  width: 20px;
+  height: 20px;
+}
+.pdfBarItem:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdfToolLbl {
+    transition: none;
+  }
+}
+
+/* Phones: hide the inline iframe + desktop toolbar; show the thumbnail + bottom bar. */
+@media (max-width: 640px) {
+  .previewFrameBox {
+    display: none;
+  }
+}
+/* Desktop: hide the mobile thumbnail; the inline frame + toolbar are used. */
+@media (min-width: 641px) {
+  .pdfThumb {
+    display: none;
+  }
+}
+
 .pdfNote {
   margin: 0;
   font-size: 0.8rem;
@@ -497,6 +557,7 @@
   background: rgba(15, 23, 42, 0.62);
 }
 .modalPanel {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -508,28 +569,28 @@
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.35);
 }
-.modalHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
-  flex-shrink: 0;
-}
-.modalTitle {
-  font-weight: 700;
-  color: #0f172a;
-}
+/* Clean pop-in: no header bar, just a single floating close button. */
 .modalClose {
-  padding: 0.35rem 0.7rem;
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 2;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid #cbd5e1;
-  border-radius: 0.4rem;
-  background: #ffffff;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
   color: #0f172a;
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+}
+.modalClose:hover {
+  background: #ffffff;
 }
 .modalClose:focus-visible {
   outline: 3px solid #1d4ed8;
