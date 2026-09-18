@@ -645,39 +645,31 @@
   gap: 0.75rem;
 }
 
-/* Shared hover-reveal accent scrollbar (inline preview + fullscreen viewer):
-   hidden at rest, a thin accent thumb fades in on hover/focus, no up/down arrows. */
-.hoverScroll {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.2s ease;
+/* Invisible scrollbar (option D) for the inline preview and the fullscreen viewer:
+   no visible bar on any browser, still scrollable by wheel/trackpad/touch/keys.
+   (No scrollbar-color, so Chrome doesn't fall back to the OS bar with arrows.) */
+.hiddenScroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge */
 }
-.hoverScroll:hover,
-.hoverScroll:focus-within {
-  scrollbar-color: #1d4ed8 transparent;
-}
-.hoverScroll::-webkit-scrollbar {
-  width: 9px;
-  height: 9px;
-}
-.hoverScroll::-webkit-scrollbar-button {
-  display: none;
+.hiddenScroll::-webkit-scrollbar {
   width: 0;
   height: 0;
+  display: none; /* Chrome / Safari */
 }
-.hoverScroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.hoverScroll::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 8px;
-}
-.hoverScroll:hover::-webkit-scrollbar-thumb,
-.hoverScroll:focus-within::-webkit-scrollbar-thumb {
-  background: #1d4ed8;
-}
-.hoverScroll::-webkit-scrollbar-thumb:hover {
-  background: #1e40af;
+
+/* Soft fade at the bottom to hint there's more to scroll. */
+.previewFrameBox::after,
+.modalPanel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2.25rem;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(to top, #f1f5f9, transparent);
 }
 
 
