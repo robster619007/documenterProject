@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "copy-pdf-assets": "node scripts/copy-pdf-assets.mjs",
+    "predev": "npm run copy-pdf-assets",
     "dev": "astro dev",
+    "prebuild": "npm run copy-pdf-assets",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",

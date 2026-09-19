@@ -14,6 +14,13 @@ import type { PdfCompressMode, SizeTarget, WorkerResponse } from './types';
 
 GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
 
+// Standard font data for pdf.js, served from public/ (see scripts/copy-pdf-assets.mjs).
+// This worker has no DOM and no system fonts, so without this data pdf.js renders
+// non-embedded fonts as blank ".notdef" boxes. These are our own bundled assets —
+// fetching them uploads nothing. Resolved against the site origin so it works from
+// the worker's own script URL in both dev and production.
+const STANDARD_FONT_DATA_URL = new URL('/standard-fonts/', self.location.origin).href;
+
 export interface PdfJob {
   jobId: string;
   input: ArrayBuffer;
@@ -268,7 +275,17 @@ async function rasterizeNoCap(job: PdfJob, beforeBytes: number): Promise<void> {
 // Renders every page of the PDF to an OffscreenCanvas at the given scale.
 async function renderPages(data: ArrayBuffer, scale: number, jobId: string): Promise<OffscreenCanvas[]> {
   // CanvasFactory keeps pdf.js off `document` so aux canvases work in the worker.
-  const task = getDocument({ data, CanvasFactory: OffscreenCanvasFactory });
+  // For fonts: this worker has no DOM and no system fonts, so we turn OFF the
+  // system-font and @font-face paths (which would silently fail and render blank
+  // ".notdef" boxes) and point pdf.js at the bundled standard font data, which it
+  // then uses to substitute non-embedded fonts correctly.
+  const task = getDocument({
+    data,
+    CanvasFactory: OffscreenCanvasFactory,
+    standardFontDataUrl: STANDARD_FONT_DATA_URL,
+    useSystemFonts: false,
+    disableFontFace: true,
+  });
   const pdf = await task.promise;
   const canvases: OffscreenCanvas[] = [];
   try {

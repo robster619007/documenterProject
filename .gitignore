@@ -2,6 +2,9 @@
 dist/
 .astro/
 
+# pdf.js standard fonts, copied from node_modules by scripts/copy-pdf-assets.mjs
+public/standard-fonts/
+
 # dependencies
 node_modules/
 
