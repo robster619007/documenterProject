@@ -32,6 +32,32 @@ const formatKB = (bytes: number) => `${Math.round(bytes / 1024)}KB`;
 // pdf.js detaches the ArrayBuffer it is given, so hand it a fresh copy each time.
 const copy = (buf: ArrayBuffer) => buf.slice(0);
 
+// pdf.js renders auxiliary canvases (for transparency groups, soft masks, tiling
+// patterns, etc.) via a CanvasFactory. Its default (DOMCanvasFactory) calls
+// document.createElement — which does not exist in a Web Worker, crashing on any
+// PDF that needs an aux canvas. This factory uses OffscreenCanvas instead so
+// rasterizing works in the worker. Passed to getDocument as `CanvasFactory`.
+class OffscreenCanvasFactory {
+  create(width: number, height: number) {
+    const canvas = new OffscreenCanvas(Math.max(1, Math.floor(width)), Math.max(1, Math.floor(height)));
+    return { canvas, context: canvas.getContext('2d') };
+  }
+  reset(cc: { canvas: OffscreenCanvas | null }, width: number, height: number) {
+    if (cc.canvas) {
+      cc.canvas.width = Math.max(1, Math.floor(width));
+      cc.canvas.height = Math.max(1, Math.floor(height));
+    }
+  }
+  destroy(cc: { canvas: OffscreenCanvas | null; context: unknown }) {
+    if (cc.canvas) {
+      cc.canvas.width = 0;
+      cc.canvas.height = 0;
+      cc.canvas = null;
+    }
+    cc.context = null;
+  }
+}
+
 self.onmessage = async (event: MessageEvent<PdfJob>) => {
   const job = event.data;
   try {
@@ -52,10 +78,13 @@ async function runPdfJob(job: PdfJob): Promise<void> {
   const { input } = job;
   const beforeBytes = input.byteLength;
 
-  const mode = job.mode && job.mode !== 'auto' ? job.mode : await pickMode(input);
+  const auto = !job.mode || job.mode === 'auto';
+  const mode = auto ? await pickMode(input) : job.mode;
 
   if (mode === 'keep-text') {
-    return keepText(job, beforeBytes);
+    // In 'auto' mode we're allowed to fall back to rasterizing if keeping the
+    // text can't meet a requested size cap.
+    return keepText(job, beforeBytes, auto);
   }
   return rasterize(job, beforeBytes);
 }
@@ -85,7 +114,7 @@ async function pickMode(input: ArrayBuffer): Promise<PdfCompressMode> {
 
 // keep-text: re-save with object streams. No image surgery in the prototype, so
 // compression is modest and honest about not reaching aggressive targets.
-async function keepText(job: PdfJob, beforeBytes: number): Promise<void> {
+async function keepText(job: PdfJob, beforeBytes: number, allowFallback: boolean): Promise<void> {
   const { jobId, input, size } = job;
   post({ type: 'progress', jobId, phase: 'finalizing' });
   const doc = await PDFDocument.load(copy(input), { updateMetadata: false });
@@ -94,6 +123,12 @@ async function keepText(job: PdfJob, beforeBytes: number): Promise<void> {
 
   const cap = maxBytesOf(size);
   if (cap !== undefined && output.byteLength > cap) {
+    // In 'auto' mode, keeping the text can't reach the target, so flatten the
+    // pages (rasterize) to actually hit the requested size.
+    if (allowFallback) {
+      return rasterize(job, beforeBytes);
+    }
+    // Explicit keep-text: don't silently drop the text — tell the user.
     return post({
       type: 'failure',
       jobId,
@@ -157,7 +192,8 @@ async function rasterize(job: PdfJob, beforeBytes: number): Promise<void> {
 
 // Renders every page of the PDF to an OffscreenCanvas at the given scale.
 async function renderPages(data: ArrayBuffer, scale: number, jobId: string): Promise<OffscreenCanvas[]> {
-  const task = getDocument({ data });
+  // CanvasFactory keeps pdf.js off `document` so aux canvases work in the worker.
+  const task = getDocument({ data, CanvasFactory: OffscreenCanvasFactory });
   const pdf = await task.promise;
   const canvases: OffscreenCanvas[] = [];
   try {
