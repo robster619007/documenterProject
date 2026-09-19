@@ -745,8 +745,10 @@
   gap: 0.75rem;
 }
 
-/* Hover-reveal accent scrollbar (inline preview + fullscreen viewer): hidden at
-   rest, a thin accent thumb fades in on hover/focus, and no up/down arrow buttons.
+/* Scroll-activity accent scrollbar (inline preview + fullscreen viewer): hidden at
+   rest, a thin accent thumb fades in only while the user is scrolling (the .scrolling
+   class is toggled by useScrollActive in ResultPreview and lingers briefly after the
+   last scroll), then fades back out. No up/down arrow buttons.
    Styled WebKit-only for Chrome/Safari — we deliberately do NOT set scrollbar-color
    there, because modern Chrome would then switch to the OS scrollbar (with arrows)
    and ignore these pseudo-elements. Firefox (no ::-webkit-scrollbar) gets the
@@ -761,13 +763,12 @@
 .hoverScroll::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 8px;
-  transition: background 0.2s ease;
+  transition: background 0.3s ease;
 }
-.hoverScroll:hover::-webkit-scrollbar-thumb,
-.hoverScroll:focus-within::-webkit-scrollbar-thumb {
+.hoverScroll.scrolling::-webkit-scrollbar-thumb {
   background: #1d4ed8;
 }
-.hoverScroll::-webkit-scrollbar-thumb:hover {
+.hoverScroll.scrolling::-webkit-scrollbar-thumb:hover {
   background: #1e40af;
 }
 
@@ -775,10 +776,9 @@
   .hoverScroll {
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
-    transition: scrollbar-color 0.2s ease;
+    transition: scrollbar-color 0.3s ease;
   }
-  .hoverScroll:hover,
-  .hoverScroll:focus-within {
+  .hoverScroll.scrolling {
     scrollbar-color: #1d4ed8 transparent;
   }
 }

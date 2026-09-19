@@ -98,6 +98,23 @@ function usePdfRender(
   return { state, info };
 }
 
+// Reveals the scrollbar only while the user is actively scrolling. Returns an
+// onScroll handler and an `active` flag that stays true for a short window after
+// the last scroll event, then flips false so the bar fades back out.
+function useScrollActive(timeout = 700) {
+  const [active, setActive] = useState(false);
+  const timer = useRef<number | null>(null);
+  const onScroll = () => {
+    setActive(true);
+    if (timer.current) window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setActive(false), timeout);
+  };
+  useEffect(() => () => {
+    if (timer.current) window.clearTimeout(timer.current);
+  }, []);
+  return { active, onScroll };
+}
+
 const IconFullscreen = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3" />
@@ -182,12 +199,14 @@ function InlinePreview({
 }) {
   const pagesRef = useRef<HTMLDivElement>(null);
   const { state, info } = usePdfRender(url, pagesRef, MAX_PAGES, false, '(min-width: 641px)');
+  const scroll = useScrollActive();
 
   return (
     <div className={`${styles.previewOut} ${styles.previewFrameBox}`}>
       <div
         ref={pagesRef}
-        className={`${styles.inlineScroll} ${styles.hoverScroll}`}
+        className={`${styles.inlineScroll} ${styles.hoverScroll} ${scroll.active ? styles.scrolling : ''}`}
+        onScroll={scroll.onScroll}
         role="group"
         aria-label={`Preview of ${name}`}
       />
@@ -256,6 +275,7 @@ function PdfModal({ url, name, onClose }: { url: string; name: string; onClose: 
   const pagesRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const { state, info } = usePdfRender(url, pagesRef, MAX_PAGES, false);
+  const scroll = useScrollActive();
 
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
@@ -284,7 +304,10 @@ function PdfModal({ url, name, onClose }: { url: string; name: string; onClose: 
         <button type="button" ref={closeRef} className={styles.modalClose} onClick={onClose} aria-label="Close preview">
           ✕
         </button>
-        <div className={`${styles.modalScroll} ${styles.hoverScroll}`}>
+        <div
+          className={`${styles.modalScroll} ${styles.hoverScroll} ${scroll.active ? styles.scrolling : ''}`}
+          onScroll={scroll.onScroll}
+        >
           <div ref={pagesRef} className={styles.modalPages} />
           {state === 'loading' && <p className={styles.pdfNote}>Rendering pages…</p>}
           {state === 'error' && (
