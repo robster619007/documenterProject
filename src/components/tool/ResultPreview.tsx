@@ -99,9 +99,9 @@ function usePdfRender(
 }
 
 // Reveals the scrollbar only while the user is actively scrolling. Returns an
-// onScroll handler and an `active` flag that stays true for a short window after
-// the last scroll event, then flips false so the bar fades back out.
-function useScrollActive(timeout = 700) {
+// onScroll handler and an `active` flag that stays true for `timeout` ms after the
+// last scroll event, then flips false so the bar fades back out.
+function useScrollActive(timeout = 5000) {
   const [active, setActive] = useState(false);
   const timer = useRef<number | null>(null);
   const onScroll = () => {
