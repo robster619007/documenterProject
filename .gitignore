@@ -20,6 +20,9 @@ npm-debug.log*
 # os
 .DS_Store
 
+# local test fixtures — real PDFs used for manual/automated compression testing
+pdf tests/
+
 # internal planning & agent-instruction docs — kept local, never published
 CLAUDE.md
 docs/PROJECT_BRIEF.md

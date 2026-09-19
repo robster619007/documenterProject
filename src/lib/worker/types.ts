@@ -43,6 +43,7 @@ export type FailureReason =
   | 'encode-failed'
   | 'target-unreachable-too-large' // cannot get small enough at these dimensions
   | 'target-unreachable-too-small' // cannot reach minBytes even at best quality
+  | 'password-protected' // PDF is encrypted/password-protected; cannot be read
   | 'internal-error';
 
 // Progress updates are posted during a job so the UI can drive an aria-live region.

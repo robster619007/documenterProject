@@ -58,18 +58,37 @@ class OffscreenCanvasFactory {
   }
 }
 
+// True if an error means the PDF is encrypted/password-protected. Covers pdf.js
+// (PasswordException) and pdf-lib (EncryptedPDFError), plus a message fallback so
+// we stay robust across library versions.
+function isPasswordError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const name = err.name;
+  if (name === 'PasswordException' || name === 'EncryptedPDFError') return true;
+  return /password|encrypted/i.test(err.message);
+}
+
 self.onmessage = async (event: MessageEvent<PdfJob>) => {
   const job = event.data;
   try {
     await runPdfJob(job);
   } catch (err) {
+    if (isPasswordError(err)) {
+      return post({
+        type: 'failure',
+        jobId: job.jobId,
+        reason: 'password-protected',
+        message:
+          "This PDF is password-protected, so it can't be compressed. Remove the password (open it and re-save without one), then try again.",
+      });
+    }
     post({
       type: 'failure',
       jobId: job.jobId,
       reason: 'internal-error',
       message: `Could not process that PDF (${
         err instanceof Error ? err.message : 'unknown error'
-      }). It may be encrypted or damaged.`,
+      }). The file may be damaged.`,
     });
   }
 };
@@ -105,7 +124,11 @@ async function pickMode(input: ArrayBuffer): Promise<PdfCompressMode> {
       }
     }
     return chars > 20 * pages ? 'keep-text' : 'rasterize';
-  } catch {
+  } catch (err) {
+    // A password-protected PDF throws here in auto mode; surface it rather than
+    // swallowing it, so the user gets the specific "remove the password" message.
+    if (isPasswordError(err)) throw err;
+    // Any other inspection failure just means "we couldn't read text" → rasterize.
     return 'rasterize';
   } finally {
     await task.destroy();
@@ -146,6 +169,10 @@ async function keepText(job: PdfJob, beforeBytes: number, allowFallback: boolean
 async function rasterize(job: PdfJob, beforeBytes: number): Promise<void> {
   const { jobId, input, size } = job;
   const cap = maxBytesOf(size);
+
+  // "Smallest size" with no explicit limit gets its own guarded path so it can
+  // never hand back a file bigger than the original.
+  if (cap === undefined) return rasterizeNoCap(job, beforeBytes);
 
   post({ type: 'progress', jobId, phase: 'resizing' });
   const scales = candidateScales(job.maxScale ?? 2);
@@ -188,6 +215,54 @@ async function rasterize(job: PdfJob, beforeBytes: number): Promise<void> {
     }
     return post(successMessage(jobId, output, beforeBytes), [output]);
   }
+}
+
+// "Smallest size" with no size limit. Flatten at normal quality; if that would
+// grow the file (already-small or text PDFs rasterize larger than they started),
+// push quality/scale down to get under the original, and if even the smallest
+// render can't beat it, keep the original bytes unchanged. Net effect: this mode
+// never returns a file bigger than the one the user gave us.
+async function rasterizeNoCap(job: PdfJob, beforeBytes: number): Promise<void> {
+  const { jobId, input } = job;
+  post({ type: 'progress', jobId, phase: 'resizing' });
+  const scales = candidateScales(job.maxScale ?? 2);
+
+  // First pass: a natural-quality flatten at the largest scale. For real scans
+  // this already shrinks the file a lot, so take it as-is when it's smaller.
+  const firstPages = await renderPages(copy(input), scales[0], jobId);
+  post({ type: 'progress', jobId, phase: 'finalizing' });
+  const natural = await buildPdf(firstPages, 0.92);
+  if (natural.byteLength < beforeBytes) {
+    return post(successMessage(jobId, natural, beforeBytes), [natural]);
+  }
+
+  // The natural flatten is bigger than the source → search each scale for a
+  // quality that lands under the original size.
+  const target = Math.floor(beforeBytes * 0.92);
+  for (let i = 0; i < scales.length; i++) {
+    const pages = i === 0 ? firstPages : await renderPages(copy(input), scales[i], jobId);
+    const encode = async (q: number) => {
+      let sum = 0;
+      for (const c of pages) sum += (await c.convertToBlob({ type: 'image/jpeg', quality: q })).size;
+      return sum;
+    };
+    post({ type: 'progress', jobId, phase: 'searching' });
+    const result = await searchQuality({ encode, maxBytes: target });
+    if (!result.ok) {
+      if (result.reason === 'target-unreachable-too-large' && i !== scales.length - 1) continue;
+      break; // can't get under the original even at the smallest scale → guard
+    }
+    post({ type: 'progress', jobId, phase: 'finalizing' });
+    const output = await buildPdf(pages, result.quality);
+    if (output.byteLength < beforeBytes) {
+      return post(successMessage(jobId, output, beforeBytes), [output]);
+    }
+    if (i !== scales.length - 1) continue;
+  }
+
+  // Guard: flattening cannot make this file smaller → return it unchanged.
+  const original = copy(input);
+  return post(successMessage(jobId, original, beforeBytes), [original]);
 }
 
 // Renders every page of the PDF to an OffscreenCanvas at the given scale.
