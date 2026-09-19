@@ -60,7 +60,7 @@ test('compress-pdf page compresses a PDF under a size cap', async ({ page }) => 
     buffer: await makeTextPdf(),
   });
   // Turn on a size limit (default 500 KB is comfortably reachable) and compress.
-  await tool.getByRole('checkbox', { name: /compress to a size limit/i }).check();
+  await tool.getByRole('checkbox', { name: /limit the file size/i }).check();
   await tool.getByRole('button', { name: /compress pdf/i }).click();
 
   // The shared ResultPreview renders the generated PDF (our own render, no iframe).

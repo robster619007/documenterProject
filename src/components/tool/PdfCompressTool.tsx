@@ -116,7 +116,7 @@ export default function PdfCompressTool() {
   return (
     <section className={styles.tool} aria-label="PDF compressor" data-ready={ready || undefined}>
       <fieldset className={styles.controls}>
-        <legend className={styles.legend}>How should it be compressed?</legend>
+        <legend className={styles.legend}>Compression method</legend>
         <div className={styles.radioGroup}>
           <label className={styles.radio}>
             <input type="radio" name="pdf-mode" checked={mode === 'auto'} onChange={() => setMode('auto')} />
@@ -141,10 +141,13 @@ export default function PdfCompressTool() {
             Smallest size (flatten)
           </label>
         </div>
+      </fieldset>
 
+      <fieldset className={styles.controls}>
+        <legend className={styles.legend}>File size limit</legend>
         <label className={styles.radio}>
           <input type="checkbox" checked={limitOn} onChange={(e) => setLimitOn(e.target.checked)} />
-          Compress to a size limit
+          Limit the file size
         </label>
         {limitOn && (
           <div className={styles.fieldRow}>
