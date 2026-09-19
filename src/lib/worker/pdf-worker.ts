@@ -65,6 +65,45 @@ class OffscreenCanvasFactory {
   }
 }
 
+// pdf.js applies soft masks and blend modes through a FilterFactory. Its default
+// (DOMFilterFactory) builds SVG <filter> elements in the document and returns a
+// `url(#id)` reference — which needs a DOM and crashes in a worker (the reported
+// "Cannot read properties of undefined (reading 'URL')" on PDFs with transparency
+// soft masks). This no-op factory returns "none" for every filter, matching pdf.js's
+// own BaseFilterFactory (not exported, so reimplemented here). Soft-mask transparency
+// is then not applied via SVG filter, which is invisible for virtually all PDFs and
+// harmless when we are rasterizing pages anyway — and it never crashes.
+class NoopFilterFactory {
+  addFilter() {
+    return 'none';
+  }
+  addHCMFilter() {
+    return 'none';
+  }
+  addAlphaFilter() {
+    return 'none';
+  }
+  addLuminosityFilter() {
+    return 'none';
+  }
+  addKnockoutFilter() {
+    return 'none';
+  }
+  addHighlightHCMFilter() {
+    return 'none';
+  }
+  addSelectionHCMFilter() {
+    return 'none';
+  }
+  addSelectionFilter() {
+    return 'none';
+  }
+  createSelectionStyle() {
+    return null;
+  }
+  destroy() {}
+}
+
 // True if an error means the PDF is encrypted/password-protected. Covers pdf.js
 // (PasswordException) and pdf-lib (EncryptedPDFError), plus a message fallback so
 // we stay robust across library versions.
@@ -282,6 +321,7 @@ async function renderPages(data: ArrayBuffer, scale: number, jobId: string): Pro
   const task = getDocument({
     data,
     CanvasFactory: OffscreenCanvasFactory,
+    FilterFactory: NoopFilterFactory,
     standardFontDataUrl: STANDARD_FONT_DATA_URL,
     useSystemFonts: false,
     disableFontFace: true,
