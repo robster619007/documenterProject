@@ -187,7 +187,7 @@ function InlinePreview({
     <div className={`${styles.previewOut} ${styles.previewFrameBox}`}>
       <div
         ref={pagesRef}
-        className={`${styles.inlineScroll} ${styles.hiddenScroll}`}
+        className={`${styles.inlineScroll} ${styles.hoverScroll}`}
         role="group"
         aria-label={`Preview of ${name}`}
       />
@@ -284,7 +284,7 @@ function PdfModal({ url, name, onClose }: { url: string; name: string; onClose: 
         <button type="button" ref={closeRef} className={styles.modalClose} onClick={onClose} aria-label="Close preview">
           ✕
         </button>
-        <div className={`${styles.modalScroll} ${styles.hiddenScroll}`}>
+        <div className={`${styles.modalScroll} ${styles.hoverScroll}`}>
           <div ref={pagesRef} className={styles.modalPages} />
           {state === 'loading' && <p className={styles.pdfNote}>Rendering pages…</p>}
           {state === 'error' && (
