@@ -763,10 +763,13 @@
 .hoverScroll::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 8px;
-  transition: background 0.3s ease;
+  /* Resting state = fade OUT: slow, so the bar dissolves gently when it hides. */
+  transition: background 0.9s ease;
 }
 .hoverScroll.scrolling::-webkit-scrollbar-thumb {
   background: #1d4ed8;
+  /* Scrolling state = fade IN: quick, so the bar appears as soon as you scroll. */
+  transition: background 0.15s ease;
 }
 .hoverScroll.scrolling::-webkit-scrollbar-thumb:hover {
   background: #1e40af;
@@ -776,10 +779,11 @@
   .hoverScroll {
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
-    transition: scrollbar-color 0.3s ease;
+    transition: scrollbar-color 0.9s ease; /* fade out slow */
   }
   .hoverScroll.scrolling {
     scrollbar-color: #1d4ed8 transparent;
+    transition: scrollbar-color 0.15s ease; /* fade in quick */
   }
 }
 
